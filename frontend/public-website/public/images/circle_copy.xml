@@ -1,0 +1,176 @@
+<symbol id="circle-nav-copy" viewBox="0 0 300 300">
+                            <defs>
+                                <style>
+                                    .cls-1 {
+                                        font-size: 21px;
+                                        font-family: Roboto-Bold, Roboto;
+                                        font-weight: 500;
+
+                                    }
+
+                                    .cls-2 {
+                                        letter-spacing: -0.02em;
+                                    }
+
+                                    .cls-3 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-4 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-5 {
+                                        font-size: 1.2em;
+                                        font-family: Roboto-Regular, Roboto;
+                                    }
+
+                                    .cls-6 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-7 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-8 {
+                                        letter-spacing: -0.02em;
+                                    }
+
+                                    .cls-9 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-10 {
+                                        letter-spacing: 0.01em;
+                                    }
+
+                                    .cls-11 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-12 {
+                                        letter-spacing: -0.04em;
+                                    }
+
+                                    .cls-13 {
+                                        letter-spacing: -0.02em;
+                                    }
+
+                                    .cls-14 {
+                                        letter-spacing: 0.01em;
+                                    }
+
+                                    .cls-15 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-16 {
+                                        letter-spacing: -0.06em;
+                                    }
+
+                                    .cls-17 {
+                                        letter-spacing: -0.02em;
+                                        fill: #622060;
+                                    }
+
+                                    .cls-18 {
+                                        letter-spacing: 0.01em;
+                                    }
+
+                                    .cls-19 {
+                                        letter-spacing: 0.02em;
+                                    }
+
+                                    .cls-20 {
+                                        letter-spacing: -0.01em;
+                                    }
+
+                                    .cls-21 {
+                                        letter-spacing: -0.03em;
+                                    }
+                                </style>
+                            </defs>
+                            <title>Artboard 1</title>
+                            <text class="cls-1" transform="translate(87 65)">
+                                <tspan class="cls-17">Maternity & </tspan>
+                                <tspan class="cls-17" x="50" text-anchor="middle" dy="25">Birthing </tspan>
+                            </text>
+
+                            <text class="cls-5" transform="translate(63 128)">
+                                <tspan x="80" text-anchor="middle">Maternity or pregnancy is  </tspan>
+                                <tspan x="80" text-anchor="middle" dy="22"> the natural phenomenon</tspan>
+                                <tspan x="80" text-anchor="middle" dy="22"> during which one or more </tspan>
+								<tspan x="80" text-anchor="middle" dy="22">babies develop ...</tspan>
+                               
+                            </text>
+
+                            <text class="cls-1" transform="translate(67 365)">
+                                <tspan class="cls-17">Fetal Medicine</tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(28 405)">
+                                <tspan x="110" text-anchor="middle">Over the years Fetal Medicine</tspan>
+                                <tspan x="110" text-anchor="middle" dy="22"> has emerged as a special</tspan>
+                                <tspan x="110" text-anchor="middle" dy="22"> entity which is separate from</tspan>
+                                <tspan x="110" text-anchor="middle" dy="22">  Obstetrics and Gynecology... </tspan>
+                                
+                            </text>
+
+                            <text class="cls-1" transform="translate(85 666)">
+                                <tspan class="cls-17">Gynecology </tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(73 710)">
+                                <tspan x="70" text-anchor="middle">Every stage in a woman's life</tspan>
+                                <tspan x="70" text-anchor="middle" dy="22"> comes with its own set of</tspan>
+                                <tspan x="70" text-anchor="middle" dy="22"> new developments,sometimes </tspan>
+                                <tspan x="70" text-anchor="middle" dy="22">bewildering changes...</tspan>
+                                 
+                            </text>
+
+                            <text class="cls-1" transform="translate(115 940)">
+                                <tspan x="22" class="cls-17" text-anchor="middle" dy="25">Laparoscopy</tspan>
+                                <tspan x="22" class="cls-17" text-anchor="middle" dy="25">Surgeries </tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(65 1012)">
+                                <tspan x="70" text-anchor="middle">laparoscopic surgery is a </tspan>
+                                <tspan x="70" text-anchor="middle" dy="22">procedure that is performed</tspan>
+                                <tspan x="70" text-anchor="middle" dy="22"> just by making small incisions</tspan>
+                                <tspan x="70" text-anchor="middle" dy="22"> rather than large... </tspan>
+                               
+                            </text>
+
+                            <text class="cls-1" transform="translate(138 1266)">
+                                <tspan class="cls-17" x="-80" y="28">Newborn Care</tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(47 1323)">
+                                <tspan x="95" text-anchor="middle">Apollo Cradle & Children's Hospital </tspan>
+                                <tspan x="95" text-anchor="middle" dy="22">aims to provide the superior</tspan>
+                                <tspan x="95" text-anchor="middle" dy="22">quality of patient care...</tspan>
+                               
+                                
+                            </text>
+
+                            <text class="cls-1" transform="translate(89 1566)">
+                                <tspan class="cls-17" x="16" y="0">PICU</tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(47 1606)">
+                                <tspan x="95" text-anchor="middle">In the PICU premises,</tspan>
+                                <tspan x="95" text-anchor="middle" dy="22"> almost all the patients will be</tspan>
+                                <tspan x="95" text-anchor="middle" dy="22"> connected to tubing and other</tspan>
+                                <tspan x="95" text-anchor="middle" dy="22"> medical devices...</tspan>
+                               
+                            </text>
+
+                            <text class="cls-1" transform="translate(69 1885)">
+                                <tspan class="cls-17" x="16" y="0">Pediatrics</tspan>
+                            </text>
+                            <text class="cls-5" transform="translate(57 1930)">
+                                <tspan x="85" text-anchor="middle">A Pediatrician is a medical doctor </tspan>
+                                <tspan x="85" text-anchor="middle" dy="22">who specialises in the physical,</tspan>
+                                <tspan x="85" text-anchor="middle" dy="22">behavioural and mental health of</tspan>
+                                <tspan x="85" text-anchor="middle" dy="22">children right from birth  </tspan>
+                                <tspan x="85" text-anchor="middle" dy="22">till the age of 16...</tspan>
+                                
+                            </text>
+
+                        </symbol>
