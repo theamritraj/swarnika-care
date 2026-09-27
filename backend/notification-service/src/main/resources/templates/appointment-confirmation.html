@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #1a3b42;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .header {
+            background-color: #007b92;
+            color: #ffffff;
+            padding: 30px;
+            text-align: left;
+        }
+        .header-sub {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            color: #e0f2f1;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting-box {
+            background-color: #fffaf0;
+            border-left: 4px solid #ffb74d;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .greeting-title {
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        .greeting-text {
+            margin: 0;
+        }
+        .section-title {
+            font-size: 11px;
+            color: #007b92;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f8fafc;
+            width: 40%;
+            font-weight: bold;
+            color: #475569;
+        }
+        td {
+            font-weight: bold;
+        }
+        .footer-banner {
+            background-color: #e6f4f6;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .footer-banner a {
+            color: #007b92;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .regards {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        .disclaimer {
+            background-color: #f8fafc;
+            padding: 20px 30px;
+            font-size: 10px;
+            color: #64748b;
+            line-height: 1.5;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-sub">SWARNIKA HOSPITALS</div>
+        <div class="header-title">Appointment Confirmation</div>
+    </div>
+    
+    <div class="content">
+        <div class="greeting-box">
+            <p class="greeting-title">Dear <span th:text="${patientName}">Patient Name</span>,</p>
+            <p class="greeting-text">Thank you for choosing Swarnika Hospitals as your healthcare provider. <br/>Your registration and appointment confirmation details are given below.</p>
+        </div>
+
+        <div class="section-title">PATIENT INFORMATION</div>
+        <table>
+            <tr>
+                <th>APPOINTMENT BOOKED FOR</th>
+                <td th:text="${patientName}">Amrit Na</td>
+            </tr>
+            <tr>
+                <th>UHID</th>
+                <td th:text="${uhid}">SH.0001434111</td>
+            </tr>
+        </table>
+
+        <div class="section-title">APPOINTMENT DETAILS</div>
+        <table>
+            <tr>
+                <th>DATE</th>
+                <td th:text="${date}">25/09/2026</td>
+            </tr>
+            <tr>
+                <th>TIME</th>
+                <td th:text="${time}">15:10-15:20</td>
+            </tr>
+            <tr>
+                <th>NAME OF DOCTOR</th>
+                <td th:text="${doctorName}">Dr Surendra V H H</td>
+            </tr>
+            <tr>
+                <th>SPECIALTY</th>
+                <td th:text="${specialty}">dermatology</td>
+            </tr>
+            <tr>
+                <th>HOSPITAL</th>
+                <td th:text="${hospitalName}">Swarnika Hospitals Main Branch</td>
+            </tr>
+            <tr>
+                <th>ADDRESS</th>
+                <td th:text="${hospitalAddress}">Sasaram</td>
+            </tr>
+            <tr>
+                <th>LOCATION</th>
+                <td th:text="${location}">Sasaram</td>
+            </tr>
+        </table>
+
+        <div class="footer-banner">
+            <strong>Need assistance?</strong> For any queries, call Swarnika Lifeline at <a href="tel:18605001066">1860 500 1066</a>.
+        </div>
+
+        <div class="regards">
+            Regards,<br/>
+            <strong>Team Swarnika Hospitals</strong>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>DISCLAIMER:</strong> Swarnika Hospitals will make all efforts to honor the appointment. However, in the event of any unforeseen circumstances beyond our control, the appointment may be delayed or rescheduled. A new appointment date and/or time, according to the patient's convenience, and availability of slot with the same specialist, or a new specialist, will be proposed.<br/><br/>
+        * Registration and Health Check/Consultation/Diagnostics charges will be collected at the hospital.
+    </div>
+</div>
+
+</body>
+</html>

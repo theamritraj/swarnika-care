@@ -1,0 +1,226 @@
+# Phase 4 Implementation Status: COMPLETED
+
+## Tasks & Execution Summary
+
+- [x] **Pre-Implementation & Audit**
+  - [x] Inspect Phase 3 Hardening Report and define deferred backlog items
+  - [x] Audit port configurations (IAM 8081, Patient 8088, Encounter 8086)
+  - [x] Verify domain separation (Encounter vs Appointment vs Patient)
+
+- [x] **IAM Service Enhancements**
+  - [x] Add `HOSPITAL_ADMIN` role and assign Phase 4 encounter/OPD/emergency permissions in `Role.java`
+  - [x] Create Flyway migration `V2__add_hospital_admin_role.sql`
+  - [x] Add OTP logging for local verification and E2E roundtrips
+
+- [x] **Appointment Service Phase 3 Deferred Hardening**
+  - [x] Rename legacy `symptoms` column to `reason` (`V3__rename_symptoms_to_reason.sql`)
+  - [x] Extract `hospitalId` claim in `JwtAuthenticationFilter` and `CustomAuthenticationDetails`
+  - [x] Enforce Hospital-Admin scope check in `AppointmentServiceImpl`
+  - [x] Update `GlobalExceptionHandler` to return HTTP 403 on `AccessDeniedException`
+  - [x] Verify all 22 appointment unit and concurrency tests pass
+
+- [x] **Patient Service Extensions**
+  - [x] Add `mrn`, `gender`, `address`, `status`, `created_at`, `updated_at` via `V2__extend_patient_and_add_relationships.sql`
+  - [x] Create `patient_hospital_registrations` table and entity with unique registration numbers (`REG-H{hospitalId}-P{patientId}-{hash}`)
+  - [x] Create `patient_relationships` table and entity with relationship types (`MOTHER_OF`, `FATHER_OF`, `CHILD_OF`, `SPOUSE_OF`, `GUARDIAN_OF`, `SIBLING_OF`, `CAREGIVER_OF`)
+  - [x] Implement duplicate registration check (409 Conflict) and self-relationship guard (400 Bad Request)
+  - [x] Verify all 14 patient service unit tests pass
+
+- [x] **Encounter Service Foundation**
+  - [x] Bootstrap new microservice `backend/encounter-service` on port 8086
+  - [x] Implement schema migration `V1__init_encounter_schema.sql`
+  - [x] Implement state machine: `OPEN` -> `IN_PROGRESS` -> `COMPLETED` / `CANCELLED`
+  - [x] Implement terminal state protection (cannot cancel or modify completed encounter)
+  - [x] Implement OPD encounter flow (supports doctor & appointment linking)
+  - [x] Implement Emergency encounter flow (supports doctorless triage)
+  - [x] Implement cross-hospital scope check (`authorizeHospitalScope`)
+  - [x] Verify all 10 encounter service unit tests pass
+
+- [x] **API Gateway Routing**
+  - [x] Add routing predicates for `/api/v1/encounters/**`, `/api/v1/opd/**`, and `/api/v1/emergency/**` pointing to `lb://encounter-service`
+
+- [x] **End-to-End Verification (`test_phase4_e2e.py`)**
+  - [x] Test 1: Real IAM Registration -> OTP -> Real JWT Verification (Phase 3 Deferred Item B)
+  - [x] Test 2: Hospital-Admin Scope Enforcement on Appointments (Phase 3 Deferred Item A)
+  - [x] Test 3: Extended Patient Registration & Multi-Hospital Registration
+  - [x] Test 4: Patient Relationships (Mother, Baby, Twins, Constraints)
+  - [x] Test 5: Encounter Service Foundation (OPD, Emergency, Lifecycle, Scope)
+
+---
+
+## Super Admin Portal — API Alignment Roadmap
+
+- [x] **Step 1: Dashboard Alignment (Live Verified)**
+  - [x] Remove fabricated data (Pending Bills ₹8.42L, placeholder charts, fake activities)
+  - [x] Connect primary KPIs to real microservices (Patients, Doctors, Appointments, Active Hospitals)
+  - [x] Add Today's Operations breakdown (Appointments, OPD Encounters, Emergency Encounters, Phase 5 IPD placeholders)
+  - [x] Add Hospital Overview table displaying live facilities from Organization Service
+  - [x] Verified route protection and live rendering via `test_dashboard_e2e.py`
+- [x] **Step 2: Hospitals & Departments Alignment (COMPLETED & VERIFIED)**
+  - [x] Organization Service backend extensions: added `PUT /api/v1/hospitals/{id}` and `PUT /api/v1/departments/{id}` with full updates and duplicate validation.
+  - [x] Implemented Next.js BFF proxy `/api/proxy/[...path]` bridging secure HttpOnly cookie sessions to API Gateway for all HTTP methods (GET, POST, PUT, DELETE).
+  - [x] Hospital Management (`/admin/hospitals`):
+    - Live Organization Service data feed (no fake/hardcoded rows).
+    - Status filter (`ALL`, `ACTIVE`, `INACTIVE`, `SUSPENDED`) & real-time search.
+    - Add Hospital Modal with comprehensive sections (Basic Info, Contact, Address, Operational Configuration).
+    - View Modal & Edit Modal (`PUT`).
+    - Decoupled Physical Infrastructure with "Manage Infrastructure →" navigation.
+  - [x] Department Management (`/admin/departments`):
+    - Live Organization Service data feed.
+    - Dynamic Hospital filter dropdown & Status filter.
+    - Head Doctor selection dynamically populated from Doctor Service.
+    - Add Department Modal & Edit Department Modal (`PUT`).
+  - [x] Rigorous E2E Lifecycle Suite (`test_step2_hospitals_departments_e2e.py`):
+    - Route protection check (redirects to `/login`).
+    - Real GET lists via BFF proxy.
+    - Real Hospital creation, duplicate code rejection (400), and hospital update.
+    - Real Department creation under hospital, duplicate code rejection (400), and department update.
+    - UI page structure and client BFF data feed verification.
+    - Database parity and clean teardown.
+  - [x] Production build clean: `next build` compiled all 34 routes in 632ms with 0 errors.
+
+- [x] **Step 3: Physical Infrastructure (Buildings, Floors, Units, Rooms, Beds) [COMPLETED & VERIFIED]**
+  - [x] **Phase 1: Backend GET Endpoints & Scope Authorization (VERIFIED)**
+    - Added `@GetMapping` endpoints to `BuildingController`, `FloorController`, `UnitController`, `RoomController`, `BedController`, and `NursingStationController`.
+    - Applied ScopeValidator and hospital-scope security across all read operations.
+    - Verified 36/36 Organization Service unit tests pass cleanly.
+    - Verified Gateway E2E routing and cross-hospital scope enforcement (`test_step3_backend_read_apis.py`).
+  - [x] **Phase 2: Super Admin Physical Infrastructure UI (VERIFIED)**
+    - Added `Infrastructure` to `AdminSidebar.tsx` under Organization section.
+    - Implemented `/admin/infrastructure/page.tsx` with global hospital selector (and `?hospitalId=` query support).
+    - Hierarchical drill-down tabs: Buildings -> Floors -> Units/Wards -> Rooms -> Beds & Nursing Stations.
+    - Cascading selection logic with automatic cleanup of stale child selections.
+    - Modals for View, Add, and Edit for all 6 tiers with parent constraint enforcement.
+    - Bed operational status quick-change modal (`PATCH /api/v1/beds/{id}/status`).
+    - Domain integrity guard: Bed strictly physical/operational with zero `patientId` / `admissionId`.
+    - Verified via `test_step3_phase2_ui_e2e.py` (100% pass).
+    - Production build clean: `next build` compiled all 35 routes in 1344ms with 0 errors.
+  - [x] **Phase 3: Comprehensive E2E & Parity Audit (VERIFIED)**
+    - Negative hierarchy mismatch rejection (400) verified across all tiers.
+    - Duplicate code & number rejection (409) verified across all tiers.
+    - Hierarchical delete protection (400) verified (Building with floors, Floor with units).
+    - Cross-hospital scope isolation verified (Scoped admin 102 denied access to 101 with 403).
+    - 3-Way Parity confirmed: DB == Gateway API == Care BFF == UI Data Feed.
+    - Bed status transitions (`AVAILABLE` -> `MAINTENANCE` -> `AVAILABLE`) persisted in DB and reflected in API.
+    - Full automated suite `audit_step3_parity_full.py` passed 7/7 sections (100%).
+    - Production build clean: all 35 routes compiled with 0 errors.
+- [x] **Step 4: Doctors & Availability (LOCKED)**
+  - [x] **Phase 0: Current-State Audit (LOCKED)**
+    - Established domain boundary: Doctor Identity != Profile != Hospital Assignment != Availability.
+    - Verified inter-service contract backward-compatibility for appointment-service.
+  - [x] **Phase 1: Backend API + Doctor Hospital Assignment Layer (VERIFIED)**
+    - Implemented `doctor_hospital_assignments` entity, repository, Feign client for Organization Service.
+    - Added global availability endpoint with hospital/department/doctor filters and assignment validation.
+    - Added composite directory endpoint `GET /api/v1/doctors/directory`.
+    - Applied V3 Flyway migration to clean synthetic user IDs and baseline assignments.
+    - All 28 Doctor Service and 22 Appointment Service tests pass.
+  - [x] **Phase 2: Super Admin Doctor Directory UI (VERIFIED)**
+    - Replaced mock UI with live API integration in `/admin/doctors`.
+    - Complete registration, profile view/edit, and hospital assignment management modals.
+    - Dynamic search and multi-criteria filters.
+  - [x] **Phase 3: Availability Management UI (VERIFIED)**
+    - Replaced placeholder table in `/admin/availability` with live schedule management.
+    - Follows Hospital -> Department -> Doctor -> Day -> Shift Time cascade.
+    - Client and server side overlap, range, and assignment validations.
+  - [x] **Phase 4: Final Comprehensive Parity Audit (16/16 PASSED)**
+    - Verified 5-tier parity (DB <-> Service <-> Gateway <-> BFF <-> UI).
+    - Verified 400/403/409 error handling, cross-hospital isolation, and RBAC scope enforcement.
+    - Zero fake data, clean production build.
+- [x] **Step 5: Staff / Workforce (COMPLETED & 16/16 AUDIT VERIFIED)**
+  - [x] **Phase 0: Current-State Audit (LOCKED)**
+    - Established core domain separation: IAM User (Security/Credentials) -> IAM Role -> Employee (Contract) -> Designation (Job Title) -> Position (Seat) -> Department -> Hospital.
+    - Verified backward-compatibility and zero leakage into Doctor/Appointment services.
+  - [x] **Phase 1: Backend API & IAM Integration Layer (VERIFIED)**
+    - Implemented IAM internal staff provisioning `POST /api/v1/internal/users/provision-staff` with `X-Internal-Secret` protection.
+    - Added OpenFeign integration in Organization Service (`IamClient.java` & `FeignConfig.java`) with compensating rollback on employee DB failure.
+    - Seeded standard workforce designations (`V4__seed_standard_workforce_designations.sql`: Nurse, Charge Nurse, Receptionist, Lab Tech, Pharmacist, Billing Exec, Operations Mgr).
+    - Added composite Staff Directory API (`GET /api/v1/employees/directory`), single detail (`GET /{id}`), onboarding (`POST /onboard`), edit (`PUT /{id}`), status mutation (`PATCH /{id}/status`), and soft deactivation (`DELETE /{id}`).
+    - All 38 Organization Service and 5 IAM Service unit tests pass cleanly.
+    - Verified live Gateway integration with 17/17 checks passed (`test_step5_phase1_e2e.py`).
+  - [x] **Phase 2 & 3: Super Admin Staff Directory UI (/admin/staff) (VERIFIED)**
+    - Replaced static/mock `/admin/staff` page with fully functional, real API-driven UI.
+    - Live KPI stat chips (Total Staff, Active, On Leave, Nursing Team, Front Desk, Inactive).
+    - Multi-criteria filtering (Hospital, Department cascading, Role, Status, and real-time Search).
+    - Modals for Onboard Staff (with IAM account provisioning & auto-generate code), View Profile Drawer, Edit Deployment, Change Status, and Soft Deactivation.
+    - Clean production build: `npm run build` compiled all 35 routes in 2.2s with 0 errors.
+    - Verified full Next.js BFF proxy chain via `test_step5_phase2_ui_e2e.py` (14/14 checks passed, 100%).
+  - [x] **Phase 4: Final Comprehensive Parity Audit (16/16 PASSED)**
+    - Automated suite `audit_step5_phase4_final.py` passed 16/16 checks (100%).
+    - 5-tier parity verified: MySQL (`organization_db` + `swarnika_care`) <-> Organization Service :8085 <-> IAM Service :8081 <-> API Gateway :8080 <-> Next.js Care BFF :3001 <-> UI Contracts.
+    - Verified cross-hospital isolation (403), duplicate code guard (400), hierarchy mismatch guard (400), compensating rollback, and soft deactivation.
+- [x] **Step 6: Patients + Patient Registration UI (COMPLETED & 16/16 AUDIT VERIFIED)**
+  - [x] **Phase 0: Current-State Audit (LOCKED)**
+    - Established domain boundary: Verified Patient backend on port 8088 with MySQL `patient_db`.
+    - Identified UI gap: mock static records with fake UHID and no interactive modals.
+    - Confirmed backend frozen rule: zero contract modifications needed.
+  - [x] **Phase 2 & 3: Super Admin Patient Directory UI (/admin/patients) (VERIFIED)**
+    - Replaced mock UI with live API integration in `/admin/patients` via Next.js BFF proxy `/api/proxy/api/v1/patients`.
+    - Live KPI cards: Total Patients, Active, Male, Female, Blood Profile Recorded.
+    - Multi-criteria filter bar: instant search (MRN, name, phone, email), Hospital filter, Gender filter, Status filter, active filter reset.
+    - Real MRN Architecture: Standardized on Medical Record Number (`MRN-XXXXXX`), eliminated fake UHID.
+    - Modals & Drawers:
+      - Register Patient Modal with field validations, auto MRN generation, and optional primary hospital registration.
+      - Patient Details Drawer (3 tabs: Demographics & IAM ID, Multi-Hospital Registrations, Family Relationships).
+      - Edit Patient Modal (`PUT /patients/{id}`) for demographics, contact, address, and status.
+      - Add Hospital Registration Modal (`REG-H{hospId}-P{id}-{hash}`).
+      - Add Family Relationship Modal (`MOTHER_OF`, `FATHER_OF`, `SPOUSE_OF`, etc.) and Unlink action (`DELETE`).
+    - Verified full Next.js BFF proxy chain via `test_step6_phase2_ui_e2e.py` (14/14 checks passed, 100%).
+    - Production build clean: `npm run build` compiled all 35 routes in 797ms with 0 errors.
+  - [x] **Phase 4: Final Comprehensive Parity Audit (16/16 PASSED)**
+    - Automated suite `audit_step6_phase4_final.py` passed 16/16 checks (100%).
+    - 5-tier parity verified: MySQL (`patient_db`) <-> Patient Service :8088 <-> API Gateway :8080 <-> Next.js Care BFF :3001 <-> UI Contracts.
+    - Verified route protection (307), duplicate email protection (409), self-relationship protection (400), target name enrichment, mutation lifecycles, and zero mock data.
+- [x] **Step 7: Appointments + Availability UI Integration (LOCKED)**
+  - [x] **Phase 0: Current-State Audit (LOCKED)**
+    - Established that appointment backend is complete with 22/22 tests passing and availability is locked.
+    - Discovered Eureka status was DOWN causing Gateway 503 Service Unavailable.
+    - Identified `/admin/appointments` as 100% static/mock with fake UHID and no lifecycle actions.
+  - [x] **Phase 1: Eureka & Gateway Alignment (VERIFIED)**
+    - Aligned `backend/appointment-service/src/main/resources/application.yml` (removed unused actuator exposure, set `hostname: localhost`).
+    - Restarted `appointment-service:8083` daemon.
+    - Verified Eureka marks instance as `UP`.
+    - Verified Gateway `:8080/api/v1/appointments` returns 200 OK (503 eliminated).
+    - Verified Next.js BFF proxy `/api/proxy/api/v1/appointments` returns 200 OK.
+    - Verified 5/5 checks passed (`test_step7_phase1_gateway_alignment.py`).
+  - [x] **Phase 2: Super Admin Appointment Directory UI (VERIFIED)**
+    - Replaced 113-line static mock UI with live, production-grade Next.js client component (`frontend/care/src/app/admin/appointments/page.tsx`).
+    - Integrated with live BFF proxy `/api/proxy/api/v1/appointments` routing to API Gateway `:8080` and `appointment-service:8083`.
+    - Zero mock/static data: eradicated fake `#APT-4091`, `#APT-4092`, `John Doe`, `Jane Smith`, and fake `UHID: PAT-9923`, `UHID: PAT-1045`.
+    - Parallel data enrichment via BFF: Patients (`/api/v1/patients`), Doctors (`/api/v1/doctors`), Hospitals (`/api/v1/hospitals`), and Departments (`/api/v1/departments`) with safe non-fabricated fallbacks.
+    - Live authoritative KPI calculation: Total Bookings, Scheduled, Confirmed, Completed, Cancelled, and Today's Load.
+    - Real multi-criteria filter bar: instant search (Appointment #, Patient Name, MRN, Doctor Name, Reason), Hospital dropdown, Status dropdown, Type dropdown, Date picker, active filter tags, and one-click reset.
+    - Slide-over Appointment Details Drawer with complete audit breakdown (Demographics, Doctor, Facility, Schedule Window, Clinical Notes, Cancellation Audit, Completion Audit).
+    - Production build clean: `npm run build` compiled all 35 routes in 1193ms with 0 errors.
+    - Automated E2E test `test_step7_phase2_appointment_directory.py`: 18/18 checks passed (100%).
+  - [x] **Phase 3: Booking & Lifecycle Modals (Confirm, Reschedule, Cancel, Complete, No-Show) (VERIFIED 22/22)**
+    - Multi-Step Book Appointment Modal: Hospital -> Department -> Assigned Doctor -> Patient Search -> Date & Doctor Availability 30-min Slot Generator -> Appointment Type & Reason -> Review & Submit.
+    - Full Lifecycle Mutations implemented:
+      - Confirm: `PATCH /api/v1/appointments/{id}/confirm` -> transitions from `SCHEDULED` to `CONFIRMED`.
+      - Reschedule: `PATCH /api/v1/appointments/{id}/reschedule` -> dynamically recalculates doctor availability, verifies schedule locks, updates date/times.
+      - Cancel: `PATCH /api/v1/appointments/{id}/cancel` -> requires cancellation reason, records `cancellation_reason` and `cancelled_at`.
+      - Complete: `PATCH /api/v1/appointments/{id}/complete` -> records `completed_at` and transitions to `COMPLETED`.
+      - No-Show: `PATCH /api/v1/appointments/{id}/no-show` -> records `NO_SHOW` status.
+    - Transactional Outbox Integration: Transactionally captures `AppointmentBookedEvent`, `AppointmentConfirmedEvent`, `AppointmentRescheduledEvent`, `AppointmentCompletedEvent`, `AppointmentCancelledEvent`, and `AppointmentNoShowEvent` into `outbox_events`.
+    - Concurrency & Validation Guards:
+      - Double-booking prevention: rejects simultaneous slot overlaps with HTTP 409 Conflict.
+      - Doctor off-duty guard: rejects bookings outside doctor's configured availability with HTTP 400.
+      - Time interval validation: enforces start time < end time (HTTP 400).
+      - Cross-hospital scope: blocks scoped admins from mutating outside assigned hospital (HTTP 403).
+    - 5-Tier Parity Verified: MySQL (`appointment_db`) <-> `appointment-service:8083` <-> API Gateway `:8080` <-> Next.js BFF `:3001` <-> Admin UI.
+    - Production build: `npm run build` compiled all 35 routes in 987ms with 0 errors.
+    - Automated E2E verification: `test_step7_phase3_appointment_lifecycle.py` passed 22/22 checks (100%).
+  - [x] **Phase 4: Final Comprehensive Parity Audit (30 Checks) & Lock (VERIFIED 30/30 - LOCKED)**
+    - Audit Suite: `test_step7_phase4_final.py` covering all 30 checks (100% passed).
+    - 5-Tier Parity: Verified 19-field exact parity across MySQL `appointment_db` <-> `appointment-service:8083` <-> API Gateway `:8080` <-> Next.js Care BFF `:3001` <-> Super Admin UI.
+    - Validated all mutations (Book, Confirm, Reschedule, Cancel, Complete, No-Show) and all Outbox events.
+    - Validated all security & guards: 409 Conflict double-booking lock, 400 off-duty rejection, 400 start>=end rejection, 403 cross-hospital scope block, 307 unauth redirect, HttpOnly session cookie.
+    - Test Data Sanitation: Test appointment rows and outbox events safely cleaned with pristine baseline restoration.
+    - Zero Regressions: Step 4 Doctor suite, Step 6 Patient suite, Step 7 Phase 1, Phase 2, and Phase 3 suites all passed 100%.
+    - Backend Unit Tests: `mvn test` in `appointment-service` passed 22/22 tests with 0 failures.
+    - Production Build: `npm run build` compiled all 35 routes in 1046ms with 0 errors.
+- [ ] **Step 8: Encounter / OPD / Emergency UI**
+- [ ] **Step 9: IPD / Admission & Bed Allocation**
+
+
+
+

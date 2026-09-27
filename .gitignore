@@ -1,0 +1,27 @@
+# Java / Maven
+target/
+*.jar
+*.war
+*.class
+.mvn/
+mvnw
+mvnw.cmd
+*.log
+
+# Node / Frontend
+node_modules/
+.next/
+dist/
+build/
+out/
+.env*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Misc
+*.tmp
+*.temp

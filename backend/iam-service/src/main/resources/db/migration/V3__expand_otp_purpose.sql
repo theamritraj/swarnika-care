@@ -1,0 +1,1 @@
+ALTER TABLE otp_verifications MODIFY COLUMN purpose VARCHAR(50) NOT NULL;

@@ -1,0 +1,53 @@
+server:
+  port: 8082
+
+spring:
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 2
+  application:
+    name: doctor-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/doctor_db
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: swarnika
+    password: Swarnika@2026
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+
+internal:
+  api:
+    secret: InternalSecret12345!
+
+springdoc:
+  swagger-ui:
+    path: /
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  security:
+    enabled: true
