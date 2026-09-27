@@ -6,9 +6,16 @@ import org.hibernate.annotations.JdbcTypeCode;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import com.swarnikacare.organization.enums.RoomStatus;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "rooms")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,115 +74,4 @@ public class Room {
         updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getHospitalId() {
-        return hospitalId;
-    }
-
-    public void setHospitalId(Long hospitalId) {
-        this.hospitalId = hospitalId;
-    }
-
-    public Long getBuildingId() {
-        return buildingId;
-    }
-
-    public void setBuildingId(Long buildingId) {
-        this.buildingId = buildingId;
-    }
-
-    public Long getFloorId() {
-        return floorId;
-    }
-
-    public void setFloorId(Long floorId) {
-        this.floorId = floorId;
-    }
-
-    public Long getUnitId() {
-        return unitId;
-    }
-
-    public void setUnitId(Long unitId) {
-        this.unitId = unitId;
-    }
-
-    public String getRoomNumber() {
-        return roomNumber;
-    }
-
-    public void setRoomNumber(String roomNumber) {
-        this.roomNumber = roomNumber;
-    }
-
-    public String getRoomName() {
-        return roomName;
-    }
-
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
-    }
-
-    public RoomType getRoomType() {
-        return roomType;
-    }
-
-    public void setRoomType(RoomType roomType) {
-        this.roomType = roomType;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
-    public String getGenderRestriction() {
-        return genderRestriction;
-    }
-
-    public void setGenderRestriction(String genderRestriction) {
-        this.genderRestriction = genderRestriction;
-    }
-
-    public RoomStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RoomStatus status) {
-        this.status = status;
-    }
-
-    public Integer getBedCount() {
-        return bedCount;
-    }
-
-    public void setBedCount(Integer bedCount) {
-        this.bedCount = bedCount;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }

@@ -2,6 +2,10 @@ package com.swarnikacare.encounter.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "referrals", indexes = {
@@ -11,6 +15,9 @@ import java.time.LocalDateTime;
         @Index(name = "idx_ref_target_doc", columnList = "target_doctor_id"),
         @Index(name = "idx_ref_status", columnList = "status")
 })
+@Getter
+@Setter
+@NoArgsConstructor
 public class Referral {
 
     @Id
@@ -82,59 +89,4 @@ public class Referral {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Referral() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getReferralNumber() { return referralNumber; }
-    public void setReferralNumber(String referralNumber) { this.referralNumber = referralNumber; }
-
-    public Long getPatientId() { return patientId; }
-    public void setPatientId(Long patientId) { this.patientId = patientId; }
-
-    public Long getHospitalId() { return hospitalId; }
-    public void setHospitalId(Long hospitalId) { this.hospitalId = hospitalId; }
-
-    public Long getReferringDoctorId() { return referringDoctorId; }
-    public void setReferringDoctorId(Long referringDoctorId) { this.referringDoctorId = referringDoctorId; }
-
-    public Long getFromDepartmentId() { return fromDepartmentId; }
-    public void setFromDepartmentId(Long fromDepartmentId) { this.fromDepartmentId = fromDepartmentId; }
-
-    public Long getTargetHospitalId() { return targetHospitalId; }
-    public void setTargetHospitalId(Long targetHospitalId) { this.targetHospitalId = targetHospitalId; }
-
-    public Long getTargetDepartmentId() { return targetDepartmentId; }
-    public void setTargetDepartmentId(Long targetDepartmentId) { this.targetDepartmentId = targetDepartmentId; }
-
-    public Long getTargetDoctorId() { return targetDoctorId; }
-    public void setTargetDoctorId(Long targetDoctorId) { this.targetDoctorId = targetDoctorId; }
-
-    public ReferralType getReferralType() { return referralType; }
-    public void setReferralType(ReferralType referralType) { this.referralType = referralType; }
-
-    public ReferralPriority getPriority() { return priority; }
-    public void setPriority(ReferralPriority priority) { this.priority = priority; }
-
-    public ReferralStatus getStatus() { return status; }
-    public void setStatus(ReferralStatus status) { this.status = status; }
-
-    public String getReason() { return reason; }
-    public void setReason(String reason) { this.reason = reason; }
-
-    public String getClinicalNotes() { return clinicalNotes; }
-    public void setClinicalNotes(String clinicalNotes) { this.clinicalNotes = clinicalNotes; }
-
-    public Long getAppointmentId() { return appointmentId; }
-    public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
-
-    public String getAdministrativeNotes() { return administrativeNotes; }
-    public void setAdministrativeNotes(String administrativeNotes) { this.administrativeNotes = administrativeNotes; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -1,0 +1,1 @@
+export default function AssessmentsPage() { return <div><h1>Nursing Assessments</h1></div>; }

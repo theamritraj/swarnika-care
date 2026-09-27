@@ -3,7 +3,14 @@ package com.swarnikacare.encounter.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
 
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class PrescriptionCreateRequest {
     private String notes;
 
@@ -11,10 +18,4 @@ public class PrescriptionCreateRequest {
     @Valid
     private List<PrescriptionItemDto> items;
 
-    public PrescriptionCreateRequest() {}
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-    public List<PrescriptionItemDto> getItems() { return items; }
-    public void setItems(List<PrescriptionItemDto> items) { this.items = items; }
 }

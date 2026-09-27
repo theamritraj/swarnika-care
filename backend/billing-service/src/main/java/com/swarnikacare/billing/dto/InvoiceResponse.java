@@ -8,11 +8,18 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 /**
  * Patient-facing invoice response.
  * Excludes: createdBy (internal), notes from staff, internal audit fields.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 public class InvoiceResponse {
     private Long id;
     private String invoiceNumber;
@@ -59,40 +66,5 @@ public class InvoiceResponse {
     }
 
     // Getters/Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getInvoiceNumber() { return invoiceNumber; }
-    public void setInvoiceNumber(String n) { this.invoiceNumber = n; }
-    public Long getHospitalId() { return hospitalId; }
-    public void setHospitalId(Long h) { this.hospitalId = h; }
-    public Long getEncounterId() { return encounterId; }
-    public void setEncounterId(Long e) { this.encounterId = e; }
-    public Long getAppointmentId() { return appointmentId; }
-    public void setAppointmentId(Long a) { this.appointmentId = a; }
-    public String getCurrency() { return currency; }
-    public void setCurrency(String c) { this.currency = c; }
-    public BigDecimal getSubtotal() { return subtotal; }
-    public void setSubtotal(BigDecimal s) { this.subtotal = s; }
-    public BigDecimal getTaxAmount() { return taxAmount; }
-    public void setTaxAmount(BigDecimal t) { this.taxAmount = t; }
-    public BigDecimal getDiscountAmount() { return discountAmount; }
-    public void setDiscountAmount(BigDecimal d) { this.discountAmount = d; }
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal t) { this.totalAmount = t; }
-    public BigDecimal getPaidAmount() { return paidAmount; }
-    public void setPaidAmount(BigDecimal p) { this.paidAmount = p; }
-    public BigDecimal getOutstandingAmount() { return outstandingAmount; }
-    public void setOutstandingAmount(BigDecimal o) { this.outstandingAmount = o; }
-    public InvoiceStatus getStatus() { return status; }
-    public void setStatus(InvoiceStatus s) { this.status = s; }
-    public LocalDateTime getIssuedAt() { return issuedAt; }
-    public void setIssuedAt(LocalDateTime i) { this.issuedAt = i; }
-    public LocalDateTime getDueAt() { return dueAt; }
-    public void setDueAt(LocalDateTime d) { this.dueAt = d; }
-    public LocalDateTime getPaidAt() { return paidAt; }
-    public void setPaidAt(LocalDateTime p) { this.paidAt = p; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime c) { this.createdAt = c; }
-    public List<InvoiceItemResponse> getItems() { return items; }
-    public void setItems(List<InvoiceItemResponse> items) { this.items = items; }
+
 }

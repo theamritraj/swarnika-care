@@ -2,11 +2,18 @@ package com.swarnikacare.patient.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "patient_relationships", uniqueConstraints = {
         @UniqueConstraint(name = "uk_relationship", columnNames = {"source_patient_id", "target_patient_id", "relationship_type"})
 })
+@Getter
+@Setter
+@NoArgsConstructor
 public class PatientRelationship {
 
     @Id
@@ -48,20 +55,4 @@ public class PatientRelationship {
         updatedAt = LocalDateTime.now();
     }
 
-    public PatientRelationship() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getSourcePatientId() { return sourcePatientId; }
-    public void setSourcePatientId(Long sourcePatientId) { this.sourcePatientId = sourcePatientId; }
-    public Long getTargetPatientId() { return targetPatientId; }
-    public void setTargetPatientId(Long targetPatientId) { this.targetPatientId = targetPatientId; }
-    public RelationshipType getRelationshipType() { return relationshipType; }
-    public void setRelationshipType(RelationshipType relationshipType) { this.relationshipType = relationshipType; }
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

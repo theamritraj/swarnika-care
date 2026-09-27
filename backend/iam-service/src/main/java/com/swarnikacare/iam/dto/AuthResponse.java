@@ -1,5 +1,13 @@
 package com.swarnikacare.iam.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class AuthResponse {
     private String token;
     private String type = "Bearer";
@@ -8,8 +16,4 @@ public class AuthResponse {
         this.token = token;
     }
 
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
 }

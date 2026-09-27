@@ -1,0 +1,1 @@
+export default function MedicationsPage() { return <div><h1>Medication Administration Record</h1></div>; }

@@ -1,0 +1,1 @@
+export default function NotesPage() { return <div><h1>Nursing Notes</h1></div>; }

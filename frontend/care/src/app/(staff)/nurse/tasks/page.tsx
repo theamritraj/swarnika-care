@@ -1,0 +1,1 @@
+export default function TasksPage() { return <div><h1>Care Tasks</h1></div>; }

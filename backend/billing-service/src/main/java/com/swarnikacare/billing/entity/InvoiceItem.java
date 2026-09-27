@@ -3,9 +3,16 @@ package com.swarnikacare.billing.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "invoice_items")
+@Getter
+@Setter
+@NoArgsConstructor
 public class InvoiceItem {
 
     @Id
@@ -39,26 +46,4 @@ public class InvoiceItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public InvoiceItem() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getInvoiceId() { return invoiceId; }
-    public void setInvoiceId(Long invoiceId) { this.invoiceId = invoiceId; }
-    public String getItemType() { return itemType; }
-    public void setItemType(String itemType) { this.itemType = itemType; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
-    public BigDecimal getDiscount() { return discount; }
-    public void setDiscount(BigDecimal discount) { this.discount = discount; }
-    public BigDecimal getTaxRate() { return taxRate; }
-    public void setTaxRate(BigDecimal taxRate) { this.taxRate = taxRate; }
-    public BigDecimal getLineTotal() { return lineTotal; }
-    public void setLineTotal(BigDecimal lineTotal) { this.lineTotal = lineTotal; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

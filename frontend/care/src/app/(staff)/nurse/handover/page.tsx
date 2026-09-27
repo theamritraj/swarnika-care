@@ -1,0 +1,1 @@
+export default function HandoverPage() { return <div><h1>Shift Handover</h1></div>; }

@@ -1,36 +1,36 @@
--- MySQL dump 10.13  Distrib 26.7.0, for macos26.6 (arm64)
---
--- Host: localhost    Database: notification_db
--- ------------------------------------------------------
--- Server version	26.7.0
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
-SET @@SESSION.SQL_LOG_BIN= 0;
+CREATE TABLE IF NOT EXISTS processed_events (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_event_id (event_id)
+);
 
---
--- GTID state at the beginning of the backup 
---
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    recipient_user_id VARCHAR(100) NOT NULL,
+    recipient_email VARCHAR(255),
+    patient_id BIGINT,
+    hospital_id BIGINT,
+    event_id VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    channel VARCHAR(50) NOT NULL,
+    priority VARCHAR(50) DEFAULT 'NORMAL',
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    action_url VARCHAR(500),
+    template_key VARCHAR(100),
+    is_read BOOLEAN DEFAULT FALSE,
+    delivery_status VARCHAR(50) DEFAULT 'CREATED',
+    failure_reason TEXT,
+    retry_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sent_at TIMESTAMP NULL,
+    delivered_at TIMESTAMP NULL,
+    read_at TIMESTAMP NULL,
+    correlation_id VARCHAR(100)
+);
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '07bdeef8-b889-11f1-b3ca-ef757e16f58a:1-105';
-SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2026-09-25 19:53:18
+CREATE INDEX idx_notifications_recipient ON notifications(recipient_user_id);
+CREATE INDEX idx_notifications_hospital ON notifications(hospital_id);

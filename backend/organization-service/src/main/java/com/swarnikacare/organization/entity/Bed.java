@@ -6,9 +6,16 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "beds")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Bed {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,107 +72,4 @@ public class Bed {
         updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getHospitalId() {
-        return hospitalId;
-    }
-
-    public void setHospitalId(Long hospitalId) {
-        this.hospitalId = hospitalId;
-    }
-
-    public Long getBuildingId() {
-        return buildingId;
-    }
-
-    public void setBuildingId(Long buildingId) {
-        this.buildingId = buildingId;
-    }
-
-    public Long getFloorId() {
-        return floorId;
-    }
-
-    public void setFloorId(Long floorId) {
-        this.floorId = floorId;
-    }
-
-    public Long getUnitId() {
-        return unitId;
-    }
-
-    public void setUnitId(Long unitId) {
-        this.unitId = unitId;
-    }
-
-    public Long getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-
-    public String getBedNumber() {
-        return bedNumber;
-    }
-
-    public void setBedNumber(String bedNumber) {
-        this.bedNumber = bedNumber;
-    }
-
-    public BedType getBedType() {
-        return bedType;
-    }
-
-    public void setBedType(BedType bedType) {
-        this.bedType = bedType;
-    }
-
-    public BedStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BedStatus status) {
-        this.status = status;
-    }
-
-    public String getGenderRestriction() {
-        return genderRestriction;
-    }
-
-    public void setGenderRestriction(String genderRestriction) {
-        this.genderRestriction = genderRestriction;
-    }
-
-    public Boolean getIsIsolation() {
-        return isIsolation;
-    }
-
-    public void setIsIsolation(Boolean isIsolation) {
-        this.isIsolation = isIsolation;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }

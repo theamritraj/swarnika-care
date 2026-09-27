@@ -3,12 +3,19 @@ package com.swarnikacare.patient.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "patient_hospital_registrations", uniqueConstraints = {
         @UniqueConstraint(name = "uk_patient_hospital", columnNames = {"patient_id", "hospital_id"}),
         @UniqueConstraint(name = "uk_registration_number", columnNames = {"registration_number"})
 })
+@Getter
+@Setter
+@NoArgsConstructor
 public class PatientHospitalRegistration {
 
     @Id
@@ -59,22 +66,4 @@ public class PatientHospitalRegistration {
         updatedAt = LocalDateTime.now();
     }
 
-    public PatientHospitalRegistration() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getPatientId() { return patientId; }
-    public void setPatientId(Long patientId) { this.patientId = patientId; }
-    public Long getHospitalId() { return hospitalId; }
-    public void setHospitalId(Long hospitalId) { this.hospitalId = hospitalId; }
-    public String getRegistrationNumber() { return registrationNumber; }
-    public void setRegistrationNumber(String registrationNumber) { this.registrationNumber = registrationNumber; }
-    public LocalDate getRegistrationDate() { return registrationDate; }
-    public void setRegistrationDate(LocalDate registrationDate) { this.registrationDate = registrationDate; }
-    public RegistrationStatus getStatus() { return status; }
-    public void setStatus(RegistrationStatus status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

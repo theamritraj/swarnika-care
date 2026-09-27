@@ -1,5 +1,13 @@
 package com.swarnikacare.iam.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class UserResponse {
     private Long id;
     private String email;
@@ -13,12 +21,4 @@ public class UserResponse {
         this.status = status;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
 }

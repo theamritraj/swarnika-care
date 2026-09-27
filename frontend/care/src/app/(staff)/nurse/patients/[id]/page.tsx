@@ -1,0 +1,1 @@
+export default function PatientPage({ params }: { params: { id: string } }) { return <div><h1>Patient Chart {params.id}</h1></div>; }
