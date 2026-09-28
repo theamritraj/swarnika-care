@@ -997,9 +997,6 @@ function StaffContent() {
                   </select>
                 </div>
 
-                  />
-                </div>
-
                 {/* Advanced Toggle */}
                 <div className="sm:col-span-2 pt-2">
                   <button
