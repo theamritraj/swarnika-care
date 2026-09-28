@@ -79,6 +79,17 @@ const EMPLOYMENT_TYPES = [
   { value: 'INTERN', label: 'Intern' },
 ];
 
+const ROLE_TO_AREA_MAP: Record<string, string[]> = {
+  'NURSE': ['NURSING'],
+  'CHARGE_NURSE': ['NURSING'],
+  'RECEPTIONIST': ['ADMINISTRATIVE'],
+  'LAB_TECHNICIAN': ['DIAGNOSTICS'],
+  'PHARMACIST': ['PHARMACY'],
+  'BILLING_STAFF': ['FINANCE'],
+  'HOSPITAL_ADMIN': ['OPERATIONS', 'ADMINISTRATIVE'],
+  'OPERATIONS_MANAGER': ['OPERATIONS']
+};
+
 function StaffContent() {
   const searchParams = useSearchParams();
   const initialHospitalId = searchParams.get('hospitalId');
@@ -296,6 +307,18 @@ function StaffContent() {
     if (!activeStaff?.hospitalId) return departments;
     return departments.filter(d => d.hospitalId.toString() === activeStaff.hospitalId.toString());
   }, [departments, activeStaff]);
+
+  const availableDesignationsForOnboard = useMemo(() => {
+    if (!onboardForm.role) return designations;
+    const allowedAreas = ROLE_TO_AREA_MAP[onboardForm.role] || [];
+    return designations.filter(d => !d.functionalArea || allowedAreas.includes(d.functionalArea));
+  }, [designations, onboardForm.role]);
+
+  const availableDesignationsForEdit = useMemo(() => {
+    if (!activeStaff?.role) return designations;
+    const allowedAreas = ROLE_TO_AREA_MAP[activeStaff.role] || [];
+    return designations.filter(d => !d.functionalArea || allowedAreas.includes(d.functionalArea));
+  }, [designations, activeStaff]);
 
   // Submit: Onboard Staff
   const handleOnboardSubmit = async (e: React.FormEvent) => {
@@ -1008,7 +1031,7 @@ function StaffContent() {
                     className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
                   >
                     <option value="">Select Designation...</option>
-                    {designations.map(des => (
+                    {availableDesignationsForOnboard.map(des => (
                       <option key={des.id} value={des.id.toString()}>{des.name}</option>
                     ))}
                   </select>
@@ -1237,7 +1260,7 @@ function StaffContent() {
                     className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
                   >
                     <option value="">Select Designation...</option>
-                    {designations.map(des => (
+                    {availableDesignationsForEdit.map(des => (
                       <option key={des.id} value={des.id.toString()}>{des.name}</option>
                     ))}
                   </select>
