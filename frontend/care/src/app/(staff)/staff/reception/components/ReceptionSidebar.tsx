@@ -18,7 +18,8 @@ import {
   Bell,
   LogOut,
   X,
-  Building2
+  Building2,
+  Activity
 } from 'lucide-react';
 
 interface NavItem {
@@ -65,6 +66,7 @@ const navSections: NavSection[] = [
     label: 'INPATIENT & TRANSFERS',
     items: [
       { title: 'Admissions Desk', href: '/staff/reception/admissions', icon: Building2 },
+      { title: 'Day Care Operations', href: '/staff/reception/daycare', icon: Activity },
       { title: 'Referral Desk', href: '/staff/reception/referrals', icon: UserCheck },
     ],
   },

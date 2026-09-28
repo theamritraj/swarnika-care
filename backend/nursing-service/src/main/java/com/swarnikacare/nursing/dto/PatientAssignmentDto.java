@@ -13,7 +13,6 @@ public class PatientAssignmentDto {
     private Long roomId;
     @NotNull
     private Long bedId;
-    @NotNull
     private Long rosterId;
 
     public Long getAdmissionId() { return admissionId; }

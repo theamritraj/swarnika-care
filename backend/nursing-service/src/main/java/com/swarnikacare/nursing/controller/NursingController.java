@@ -63,8 +63,9 @@ public class NursingController {
         assignment.setUnitId(dto.getUnitId());
         assignment.setRoomId(dto.getRoomId());
         assignment.setBedId(dto.getBedId());
-        assignment.setRosterId(dto.getRosterId());
+        assignment.setRosterId(dto.getRosterId() != null ? dto.getRosterId() : 1L);
         assignment.setNurseUserId(authUserId);
+        assignment.setStatus("ACTIVE");
         assignment.setCreatedBy(authUserId);
         
         return ResponseEntity.ok(assignmentService.save(assignment));

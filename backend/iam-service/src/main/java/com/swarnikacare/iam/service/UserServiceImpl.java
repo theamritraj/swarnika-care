@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with this email already exists");
         }
-        User user = new User(email, role, UserStatus.ACTIVE, false);
+        User user = new User(email, role, UserStatus.ACTIVE, true);
         return userRepository.save(user);
     }
 

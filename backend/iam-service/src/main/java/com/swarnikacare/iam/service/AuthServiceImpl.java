@@ -70,6 +70,10 @@ public class AuthServiceImpl implements AuthService {
 
         boolean isValid = otpService.verifyOtp(request.getEmail(), request.getOtp(), purpose);
         if (!isValid) {
+            OtpPurpose altPurpose = (purpose == OtpPurpose.LOGIN) ? OtpPurpose.REGISTRATION : OtpPurpose.LOGIN;
+            isValid = otpService.verifyOtp(request.getEmail(), request.getOtp(), altPurpose);
+        }
+        if (!isValid) {
             throw new BadCredentialsException("Invalid or expired OTP");
         }
 
