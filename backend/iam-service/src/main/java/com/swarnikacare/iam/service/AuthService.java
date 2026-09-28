@@ -4,7 +4,6 @@ import com.swarnikacare.iam.dto.AuthResponse;
 import com.swarnikacare.iam.dto.OtpRequest;
 import com.swarnikacare.iam.dto.OtpVerifyRequest;
 import com.swarnikacare.iam.dto.PatientRegistrationRequest;
-import com.swarnikacare.iam.dto.UserResponse;
 
 public interface AuthService {
     void registerPatient(PatientRegistrationRequest request);

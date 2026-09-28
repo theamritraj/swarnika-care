@@ -1,0 +1,24 @@
+{
+  "audit_type": "POST-P0 FULL SYSTEM RE-AUDIT",
+  "backend_status": "COMPLETE",
+  "frontend_status": "PARTIALLY CONNECTED",
+  "modules": [
+    {"name": "IAM", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Organization", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Patient", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Doctor", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Appointment", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Encounter", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Reception", "status": "VERIFIED", "remaining": "None"},
+    {"name": "IPD", "status": "VERIFIED", "remaining": "Wire UI to APIs; Fix Doctor discharge 403"},
+    {"name": "Nursing", "status": "VERIFIED", "remaining": "Wire Daily Nursing Report UI to APIs"},
+    {"name": "Lab", "status": "VERIFIED", "remaining": "Wire Pathologist Dashboard UI to APIs"},
+    {"name": "Pharmacy", "status": "VERIFIED", "remaining": "Wire External Prescription UI to APIs"},
+    {"name": "Billing", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Notification", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Frontend Setup", "status": "INCOMPLETE", "remaining": "Replace mock data with real BFF fetches across (staff) routes"},
+    {"name": "Security", "status": "VERIFIED", "remaining": "None"},
+    {"name": "Deployment", "status": "PARTIAL", "remaining": "Create docker-compose.yml"}
+  ],
+  "recommendation": "Focus strictly on connecting the existing React UIs to the BFF. Do not build new microservices."
+}

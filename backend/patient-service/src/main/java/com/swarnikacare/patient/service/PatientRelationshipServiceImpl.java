@@ -43,7 +43,7 @@ public class PatientRelationshipServiceImpl implements PatientRelationshipServic
             throw new InvalidRequestException("Self-relationship is not permitted: source and target patient must be different");
         }
 
-        Patient sourcePatient = patientRepository.findById(sourcePatientId)
+        patientRepository.findById(sourcePatientId)
                 .orElseThrow(() -> new PatientNotFoundException("Source patient not found with id: " + sourcePatientId));
 
         Patient targetPatient = patientRepository.findById(request.getTargetPatientId())

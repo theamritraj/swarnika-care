@@ -65,7 +65,7 @@ public class BedController {
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'OPERATIONS_MANAGER', 'DOCTOR', 'NURSE')")
-    @PatchMapping("/{id}/status")
+    @RequestMapping(value = "/{id}/status", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public ResponseEntity<Map<String, Object>> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> status) {
         Bed bed = bedService.findById(id);
         if (!scopeValidator.canAccessHospital(SecurityContextHolder.getContext().getAuthentication(), bed.getHospitalId())) {

@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/billing/staff")
-@PreAuthorize("hasAnyRole('BILLING_STAFF', 'HOSPITAL_ADMIN', 'SUPER_ADMIN', 'RECEPTIONIST')")
+@PreAuthorize("hasAnyRole('BILLING_STAFF', 'HOSPITAL_ADMIN', 'SUPER_ADMIN', 'RECEPTIONIST', 'DOCTOR')")
 public class StaffBillingController {
 
     private final BillingService billingService;

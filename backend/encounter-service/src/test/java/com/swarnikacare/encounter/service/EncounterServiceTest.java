@@ -7,7 +7,6 @@ import com.swarnikacare.encounter.entity.Encounter;
 import com.swarnikacare.encounter.entity.EncounterSource;
 import com.swarnikacare.encounter.entity.EncounterStatus;
 import com.swarnikacare.encounter.entity.EncounterType;
-import com.swarnikacare.encounter.exception.EncounterNotFoundException;
 import com.swarnikacare.encounter.exception.InvalidStateTransitionException;
 import com.swarnikacare.encounter.repository.EncounterRepository;
 import com.swarnikacare.encounter.security.CustomAuthenticationDetails;

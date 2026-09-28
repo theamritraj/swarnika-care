@@ -1,6 +1,5 @@
 package com.swarnikacare.organization.service;
 
-import com.swarnikacare.organization.dto.BuildingRequest;
 import com.swarnikacare.organization.entity.Building;
 import com.swarnikacare.organization.entity.Floor;
 import com.swarnikacare.organization.exception.BuildingNotFoundException;

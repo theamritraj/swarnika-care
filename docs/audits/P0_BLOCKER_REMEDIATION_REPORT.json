@@ -1,0 +1,28 @@
+{
+  "totalBlockers": 3,
+  "fixedBlockers": 3,
+  "openBlockers": 0,
+  "status": "READY FOR NEXT FULL AUDIT",
+  "remediations": [
+    {
+      "id": "P0-1",
+      "issue": "JVM Memory Pressure / Exit Code 137",
+      "status": "VERIFIED FIXED"
+    },
+    {
+      "id": "P0-2",
+      "issue": "Clinical frontend operational deficiencies",
+      "status": "VERIFIED FIXED"
+    },
+    {
+      "id": "P0-3",
+      "issue": "Feign JWT propagation missing",
+      "status": "VERIFIED FIXED"
+    }
+  ],
+  "decisions": {
+    "nursingWorkflow": "PAPER-FIRST batch processing verified.",
+    "labWorkflow": "INTERNAL LIS dashboard provided.",
+    "pharmacyWorkflow": "OUTSOURCED PHARMACY prescription routing provided."
+  }
+}

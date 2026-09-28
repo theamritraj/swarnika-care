@@ -19,7 +19,9 @@ public class EmailSenderImpl implements EmailSender {
     @Override
     public void sendOtp(String to, String otp, String purpose) {
         log.info("📧 Sending {} verification code to {}", purpose, to);
-        
+        log.info("=============================================");
+        log.info("🚀 YOUR LOCAL DEVELOPMENT OTP IS: {}", otp);
+        log.info("=============================================");
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         

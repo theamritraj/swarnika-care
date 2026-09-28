@@ -63,7 +63,7 @@ public class ScopeValidator {
             return registrationRepository.existsByPatientIdAndHospitalId(patientId, userHospitalId);
         }
 
-        return hasRole(authentication, "ROLE_HOSPITAL_ADMIN") || hasRole(authentication, "ROLE_RECEPTIONIST") || hasRole(authentication, "ROLE_DOCTOR") || hasRole(authentication, "ROLE_NURSE");
+        return hasRole(authentication, "ROLE_HOSPITAL_ADMIN") || hasRole(authentication, "ROLE_RECEPTIONIST") || hasRole(authentication, "ROLE_DOCTOR") || hasRole(authentication, "ROLE_NURSE") || hasRole(authentication, "ROLE_BILLING_STAFF");
     }
 
     private Long extractUserHospitalId(Authentication authentication) {

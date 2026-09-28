@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface PatientService {
     PatientResponse createPatient(PatientCreateRequest request);
+    PatientResponse registerNewborn(com.swarnikacare.patient.dto.RegisterNewbornRequest request);
     PatientResponse getPatientById(Long id);
     PatientResponse getPatientByUserId(String userId);
     List<PatientResponse> getAllPatients();

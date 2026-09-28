@@ -94,6 +94,7 @@ public class DoctorOnboardingServiceImpl implements DoctorOnboardingService {
 
     @Override
     @Transactional
+    @SuppressWarnings("unchecked")
     public DoctorOnboardingResponse completeOnboarding(DoctorOnboardingCompleteRequest request) {
         String email = request.getEmail().trim().toLowerCase();
         String otp = request.getOtp().trim();

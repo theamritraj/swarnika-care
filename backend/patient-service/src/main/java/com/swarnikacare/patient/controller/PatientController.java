@@ -3,13 +3,10 @@ package com.swarnikacare.patient.controller;
 import com.swarnikacare.patient.dto.PatientCreateRequest;
 import com.swarnikacare.patient.dto.PatientResponse;
 import com.swarnikacare.patient.dto.PatientUpdateRequest;
-import com.swarnikacare.patient.entity.PatientStatus;
-import com.swarnikacare.patient.exception.PatientNotFoundException;
 import com.swarnikacare.patient.service.PatientService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +41,15 @@ public class PatientController {
         return new ResponseEntity<>(createSuccessResponse("Patient created successfully", patient), HttpStatus.CREATED);
     }
 
+    @PostMapping("/newborns")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR')")
+    public ResponseEntity<Map<String, Object>> registerNewborn(@Valid @RequestBody com.swarnikacare.patient.dto.RegisterNewbornRequest request) {
+        PatientResponse patient = patientService.registerNewborn(request);
+        return new ResponseEntity<>(createSuccessResponse("Newborn registered successfully", patient), HttpStatus.CREATED);
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR') and @scopeValidator.canAccessPatient(authentication, #id))")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR','BILLING_STAFF') and @scopeValidator.canAccessPatient(authentication, #id))")
     public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
         PatientResponse patient = patientService.getPatientById(id);
         return ResponseEntity.ok(createSuccessResponse("Patient retrieved successfully", patient));
@@ -56,7 +60,7 @@ public class PatientController {
      * Patients must use PATCH /me to update their own allowed fields.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #id))")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','BILLING_STAFF') and @scopeValidator.canAccessPatient(authentication, #id))")
     public ResponseEntity<Map<String, Object>> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody PatientUpdateRequest request) {

@@ -1,9 +1,7 @@
 package com.swarnikacare.nursing.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.math.BigDecimal;
 
 @Entity

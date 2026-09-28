@@ -13,6 +13,7 @@ import com.swarnikacare.patient.repository.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.swarnikacare.patient.entity.PatientNewbornDetail;
+import com.swarnikacare.patient.repository.PatientNewbornDetailRepository;
+import com.swarnikacare.patient.dto.RegisterNewbornRequest;
+import com.swarnikacare.patient.dto.PatientRelationshipRequest;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -30,6 +35,8 @@ public class PatientServiceImpl implements PatientService {
     
     private final PatientRepository patientRepository;
     private PatientHospitalRegistrationService registrationService;
+    private PatientNewbornDetailRepository newbornDetailRepo;
+    private PatientRelationshipService relationshipService;
 
     public PatientServiceImpl(PatientRepository patientRepository) {
         this.patientRepository = patientRepository;
@@ -38,6 +45,17 @@ public class PatientServiceImpl implements PatientService {
     @Autowired(required = false)
     public void setRegistrationService(PatientHospitalRegistrationService registrationService) {
         this.registrationService = registrationService;
+    }
+
+    @Autowired
+    public void setNewbornDetailRepo(PatientNewbornDetailRepository newbornDetailRepo) {
+        this.newbornDetailRepo = newbornDetailRepo;
+    }
+
+    @Autowired
+    @Lazy
+    public void setRelationshipService(PatientRelationshipService relationshipService) {
+        this.relationshipService = relationshipService;
     }
     
     @Transactional
@@ -88,6 +106,47 @@ public class PatientServiceImpl implements PatientService {
         }
         
         return mapToResponse(savedPatient);
+    }
+    
+    @Transactional
+    @Override
+    public PatientResponse registerNewborn(RegisterNewbornRequest request) {
+        log.info("Registering newborn for mother: {}", request.getMotherId());
+        
+        Patient mother = patientRepository.findById(request.getMotherId())
+                .orElseThrow(() -> new PatientNotFoundException("Mother not found with id: " + request.getMotherId()));
+
+        Patient baby = new Patient();
+        baby.setFirstName(request.getFirstName());
+        baby.setLastName(request.getLastName());
+        baby.setGender(com.swarnikacare.patient.entity.Gender.valueOf(request.getGender().toUpperCase()));
+        baby.setDateOfBirth(request.getDateOfBirth());
+        
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
+        baby.setEmail("baby." + uniqueSuffix + "@swarnikacare.local");
+        baby.setPhone("000" + uniqueSuffix.substring(0,7).replaceAll("[^0-9]","1")); 
+        baby.setStatus(PatientStatus.ACTIVE);
+        
+        baby.setMrn(generateUniqueMrn());
+        baby.setUserId("usr-" + uniqueSuffix);
+        
+        Patient savedBaby = patientRepository.save(baby);
+
+        PatientNewbornDetail nd = new PatientNewbornDetail();
+        nd.setPatientId(savedBaby.getId());
+        nd.setMotherId(mother.getId());
+        nd.setBirthWeightKg(request.getBirthWeightKg());
+        nd.setGestationalAgeWeeks(request.getGestationalAgeWeeks());
+        nd.setDeliveryMethod(request.getDeliveryMethod());
+        nd.setTimeOfBirth(request.getTimeOfBirth());
+        newbornDetailRepo.save(nd);
+
+        PatientRelationshipRequest relReq = new PatientRelationshipRequest();
+        relReq.setTargetPatientId(savedBaby.getId());
+        relReq.setRelationshipType(com.swarnikacare.patient.entity.RelationshipType.MOTHER_OF);
+        relationshipService.addRelationship(mother.getId(), relReq);
+
+        return mapToResponse(savedBaby);
     }
     
     @Transactional(readOnly = true)

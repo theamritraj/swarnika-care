@@ -2,7 +2,6 @@ package com.swarnikacare.patient.service;
 
 import com.swarnikacare.patient.dto.PatientHospitalRegistrationRequest;
 import com.swarnikacare.patient.dto.PatientHospitalRegistrationResponse;
-import com.swarnikacare.patient.entity.Patient;
 import com.swarnikacare.patient.entity.PatientHospitalRegistration;
 import com.swarnikacare.patient.entity.RegistrationStatus;
 import com.swarnikacare.patient.exception.DuplicateResourceException;
@@ -39,7 +38,7 @@ public class PatientHospitalRegistrationServiceImpl implements PatientHospitalRe
     public PatientHospitalRegistrationResponse registerPatientAtHospital(Long patientId, PatientHospitalRegistrationRequest request) {
         log.info("Registering patient {} at hospital {}", patientId, request.getHospitalId());
 
-        Patient patient = patientRepository.findById(patientId)
+        patientRepository.findById(patientId)
                 .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + patientId));
 
         if (registrationRepository.existsByPatientIdAndHospitalId(patientId, request.getHospitalId())) {

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ScopeValidator {
 
     // Helper to get userId from the authentication principal
-    private String getUserId(Authentication auth) {
+    public String getUserId(Authentication auth) {
         if (auth != null && auth.getName() != null) {
             return auth.getName(); // Usually mapped to the 'sub' claim (userId)
         }

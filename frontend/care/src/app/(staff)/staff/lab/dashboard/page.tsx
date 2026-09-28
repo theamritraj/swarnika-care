@@ -1,33 +1,44 @@
-import { getSession } from '@/lib/server/auth';
-import { redirect } from 'next/navigation';
+'use client';
+import React, { useState, useEffect } from 'react';
 
-export default async function LabDashboard() {
-    const session = await getSession();
-    
-    if (!session || !session.roles.includes('LAB_TECHNICIAN')) {
-        redirect('/login');
-    }
+export default function LabDashboard() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    return (
-        <div className="p-8">
-            <h1 className="mb-6 text-3xl font-bold">Lab Technician Dashboard</h1>
-            <div className="rounded-lg border bg-white p-6 shadow-sm mb-6">
-                <p className="text-gray-600 mb-4">Welcome to the laboratory portal. (Shell implementation)</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                        <h3 className="font-semibold text-blue-800">Lab Orders</h3>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                        <h3 className="font-semibold text-green-800">Sample Collection</h3>
-                    </div>
-                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                        <h3 className="font-semibold text-purple-800">Results & Reports</h3>
-                    </div>
-                </div>
-            </div>
-            <form action="/api/auth/logout" method="POST">
-                <button type="submit" className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700">Logout</button>
-            </form>
-        </div>
-    );
+  useEffect(() => {
+    fetch('/api/proxy/lab/orders?hospitalId=1')
+      .then(res => res.json())
+      .then(data => {
+        setOrders(data.data || []);
+        setLoading(false);
+      })
+      .catch(err => setLoading(false));
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Laboratory Dashboard (Internal LIS)</h1>
+      <div className="bg-white p-6 rounded shadow border border-gray-200 mb-6">
+        <h2 className="text-xl font-semibold mb-4">Pathologist Verification Queue</h2>
+        {loading ? <p>Loading lab orders...</p> : (
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b"><th className="pb-2">Order ID</th><th className="pb-2">Test Name</th><th className="pb-2">Status</th></tr>
+            </thead>
+            <tbody>
+              {orders.length === 0 ? <tr><td colSpan={3} className="py-4 text-gray-500">No pending verifications.</td></tr> :
+                orders.map((o: any, i: number) => (
+                  <tr key={i} className="border-b">
+                    <td className="py-2">ORD-{o.id}</td>
+                    <td className="py-2">{o.testName || 'Unknown Test'}</td>
+                    <td className="py-2 font-bold">{o.status}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
 }

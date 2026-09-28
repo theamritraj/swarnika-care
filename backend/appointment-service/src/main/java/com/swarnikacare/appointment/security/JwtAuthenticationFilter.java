@@ -14,7 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -33,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String secretKey;
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -96,7 +96,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
 
-                authToken.setDetails(new CustomAuthenticationDetails(request, hospitalId));
+                Long userId = null;
+                Object uid = claims.get("userId");
+                if (uid instanceof Number) {
+                    userId = ((Number) uid).longValue();
+                } else if (uid instanceof String) {
+                    try {
+                        userId = Long.parseLong((String) uid);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                authToken.setDetails(new CustomAuthenticationDetails(request, hospitalId, userId));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (Exception ex) {

@@ -43,6 +43,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     );
 
     @Override
+    @SuppressWarnings("unchecked")
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         

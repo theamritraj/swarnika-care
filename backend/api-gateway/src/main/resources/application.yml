@@ -56,10 +56,22 @@ spring:
           uri: lb://nursing-service
           predicates:
             - Path=/api/v1/nursing, /api/v1/nursing/**
+        - id: lab-service
+          uri: lb://lab-service
+          predicates:
+            - Path=/api/v1/lab, /api/v1/lab/**
         - id: document-redeem
           uri: lb://patient-service
           predicates:
             - Path=/api/v1/documents/redeem
+        - id: pharmacy-service
+          uri: lb://pharmacy-service
+          predicates:
+            - Path=/api/v1/pharmacy, /api/v1/pharmacy/**
+        - id: ipd-service
+          uri: lb://ipd-service
+          predicates:
+            - Path=/api/v1/ipd, /api/v1/ipd/**
 
 eureka:
   client:

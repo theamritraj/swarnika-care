@@ -11,7 +11,6 @@ import com.swarnikacare.appointment.dto.AppointmentCancelRequest;
 import com.swarnikacare.appointment.dto.AppointmentRescheduleRequest;
 import com.swarnikacare.appointment.entity.Appointment;
 import com.swarnikacare.appointment.entity.AppointmentStatus;
-import com.swarnikacare.appointment.entity.AppointmentType;
 import com.swarnikacare.appointment.entity.BookingSource;
 import com.swarnikacare.appointment.entity.DoctorScheduleLock;
 import com.swarnikacare.appointment.exception.AppointmentConflictException;
@@ -22,6 +21,7 @@ import com.swarnikacare.appointment.exception.InvalidAppointmentTimeException;
 import com.swarnikacare.appointment.outbox.OutboxEventRepository;
 import com.swarnikacare.appointment.repository.AppointmentRepository;
 import com.swarnikacare.appointment.repository.DoctorScheduleLockRepository;
+import com.swarnikacare.appointment.security.CustomAuthenticationDetails;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Map<String, Object> patientData = validatePatientExists(request.getPatientId());
         Map<String, Object> doctorData = validateDoctorExists(request.getDoctorId());
         Map<String, Object> hospitalData = validateHospitalExists(request.getHospitalId());
-        Map<String, Object> departmentData = validateDepartmentExists(request.getDepartmentId());
+        validateDepartmentExists(request.getDepartmentId());
 
         // Validate doctor belongs to hospital and department
         validateDoctorHospitalAndDepartment(doctorData, request.getHospitalId(), request.getDepartmentId());
@@ -287,6 +287,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> validatePatientExists(Long patientId) {
         try {
             Map<String, Object> response = patientClient.getPatientById(patientId);
@@ -302,6 +303,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> validateDoctorExists(Long doctorId) {
         try {
             Map<String, Object> response = doctorClient.getDoctorById(doctorId);
@@ -317,6 +319,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private Map<String, Object> validateHospitalExists(Long hospitalId) {
         try {
             Map<String, Object> response = organizationClient.getHospitalById(hospitalId);
@@ -332,6 +335,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private Map<String, Object> validateDepartmentExists(Long departmentId) {
         try {
             Map<String, Object> response = organizationClient.getDepartmentById(departmentId);
@@ -507,9 +511,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (hasRole(auth, "ROLE_SUPER_ADMIN") || hasRole(auth, "ROLE_HOSPITAL_ADMIN") || hasRole(auth, "ROLE_RECEPTIONIST")) return;
         
         if (hasRole(auth, "ROLE_DOCTOR")) {
-            String userId = auth.getName();
-            if (doctorData != null && !userId.equals(doctorData.get("userId"))) {
-                throw new AccessDeniedException("You do not have permission to access this doctor's appointments");
+            // Compare JWT userId (from claims) with doctor entity's userId
+            Long jwtUserId = null;
+            if (auth.getDetails() instanceof CustomAuthenticationDetails customDetails) {
+                jwtUserId = customDetails.getUserId();
+            }
+            if (doctorData != null && jwtUserId != null) {
+                Object doctorUserId = doctorData.get("userId");
+                String doctorUserIdStr = doctorUserId != null ? String.valueOf(doctorUserId) : null;
+                if (!String.valueOf(jwtUserId).equals(doctorUserIdStr)) {
+                    throw new AccessDeniedException("You do not have permission to access this doctor's appointments");
+                }
             }
         }
     }

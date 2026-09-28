@@ -2,7 +2,6 @@ package com.swarnikacare.organization.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.swarnikacare.organization.dto.PositionRequest;
-import com.swarnikacare.organization.entity.Position;
 import com.swarnikacare.organization.service.PositionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

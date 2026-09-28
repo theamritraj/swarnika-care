@@ -62,7 +62,7 @@ public class AdmissionController {
         return ResponseEntity.ok(ok("Admission retrieved successfully", admission));
     }
 
-    @PatchMapping("/{id}/status")
+    @RequestMapping(value = "/{id}/status", method = {RequestMethod.PUT, RequestMethod.PATCH})
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST','DOCTOR','NURSE')")
     public ResponseEntity<Map<String, Object>> updateStatus(
             @PathVariable Long id,

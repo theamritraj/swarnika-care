@@ -2,7 +2,6 @@ package com.swarnikacare.organization.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.swarnikacare.organization.dto.DesignationRequest;
-import com.swarnikacare.organization.entity.Designation;
 import com.swarnikacare.organization.service.DesignationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

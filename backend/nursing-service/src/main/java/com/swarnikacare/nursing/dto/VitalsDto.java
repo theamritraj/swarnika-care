@@ -2,7 +2,6 @@ package com.swarnikacare.nursing.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class VitalsDto {
     @NotNull(message = "Patient ID is required")

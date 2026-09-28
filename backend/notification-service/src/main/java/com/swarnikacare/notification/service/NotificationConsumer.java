@@ -88,4 +88,41 @@ public class NotificationConsumer {
             throw new RuntimeException("Failed to deserialize event payload", e);
         }
     }
+
+    @KafkaListener(topics = "${app.kafka.topics.patient-discharged:swarnika.patient.discharged}", groupId = "notification-group")
+    @Transactional
+    public void consumePatientDischarged(String payload) {
+        log.info("Received patient discharged event: {}", payload);
+        
+        try {
+            com.swarnikacare.notification.event.PatientDischargedEvent event = objectMapper.readValue(payload, com.swarnikacare.notification.event.PatientDischargedEvent.class);
+            // using admission id as event ID proxy for idempotency if no event ID exists
+            String eventId = "discharge-" + event.getAdmissionId();
+            
+            if (processedEventRepository.existsByEventId(eventId)) {
+                log.info("Event {} already processed. Idempotency kicking in.", eventId);
+                return;
+            }
+
+            Notification inApp = new Notification();
+            inApp.setEventId(eventId);
+            inApp.setEventType("DISCHARGE");
+            inApp.setChannel("IN_APP");
+            inApp.setRecipientUserId(event.getPatientId() != null ? event.getPatientId().toString() : null);
+            inApp.setTitle("Patient Discharged");
+            inApp.setContent("You have been successfully discharged with status: " + event.getDischargeStatus());
+            
+            notificationRepository.save(inApp);
+            
+            ProcessedEvent processedEvent = new ProcessedEvent();
+            processedEvent.setEventId(eventId);
+            processedEvent.setEventType("DISCHARGE");
+            processedEventRepository.save(processedEvent);
+            
+            dispatcher.dispatch(inApp);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            log.error("Failed to parse discharge event payload: {}", payload, e);
+            throw new RuntimeException("Failed to deserialize discharge event payload", e);
+        }
+    }
 }
