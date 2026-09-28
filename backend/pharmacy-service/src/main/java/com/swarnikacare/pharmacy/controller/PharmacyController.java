@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @RestController
 @RequestMapping("/api/v1/pharmacy")
@@ -15,17 +19,40 @@ import java.util.HashMap;
 public class PharmacyController {
     private final DispensingService dispensingService;
     private final MedicineRepository medicineRepo;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @PostMapping("/medicines")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'PHARMACY_MANAGER')")
     public Medicine addMedicine(@RequestBody Medicine medicine) {
         medicine.setActive(true);
-        return medicineRepo.save(medicine);
+        Medicine saved = medicineRepo.save(medicine);
+        if (medicine.getHospitalId() != null) {
+            String cacheKey = "swarnika:prod:pharmacy:medicines:hospital:" + medicine.getHospitalId();
+            try {
+                redisTemplate.delete(cacheKey);
+            } catch (Exception e) {}
+        }
+        return saved;
     }
     
     @GetMapping("/medicines")
     public List<Medicine> getMedicines(@RequestParam Long hospitalId) {
-        return medicineRepo.findByHospitalId(hospitalId);
+        String cacheKey = "swarnika:prod:pharmacy:medicines:hospital:" + hospitalId;
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.convertValue(cached, new TypeReference<List<Medicine>>() {});
+            }
+        } catch (Exception e) {}
+        
+        List<Medicine> medicines = medicineRepo.findByHospitalId(hospitalId);
+        
+        try {
+            redisTemplate.opsForValue().set(cacheKey, medicines, Duration.ofHours(1));
+        } catch (Exception e) {}
+        
+        return medicines;
     }
 
     @PostMapping("/orders/{id}/dispense")

@@ -1,86 +1,72 @@
 import Link from 'next/link';
+import { Calendar, Stethoscope, ClipboardList, PhoneCall, Smile } from 'lucide-react';
+import Image from 'next/image';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between pt-[74px] pb-24 font-sans text-center">
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-16 max-w-2xl mx-auto">
+    <div className="min-h-[80vh] bg-white flex flex-col items-center pt-16 md:pt-24 pb-20 font-sans px-4 sm:px-6 md:px-8">
+      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         
-        {/* 404 Illustration matching Apollo reference */}
-        <div className="relative mb-6">
-          <div className="flex items-center justify-center gap-2 select-none">
-            {/* Left 4 */}
-            <span className="text-[100px] md:text-[140px] font-black text-[#58184d] leading-none drop-shadow-md">
-              4
-            </span>
-
-            {/* Middle 0 with Teal Circle Character */}
-            <div className="relative w-[110px] h-[110px] md:w-[150px] md:h-[150px] rounded-full bg-[#0284a8] flex items-center justify-center shadow-inner overflow-hidden border-4 border-[#016580]">
-              {/* Hole depth effect */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-transparent"></div>
-              
-              {/* Vector character looking out */}
-              <svg 
-                className="w-24 h-24 md:w-32 md:h-32 text-white relative z-10 -bottom-2" 
-                viewBox="0 0 100 100" 
-                fill="none"
-              >
-                {/* Hair */}
-                <path d="M30 45 C30 25, 70 25, 70 45 C75 55, 65 65, 50 65 C35 65, 25 55, 30 45 Z" fill="#2d3748" />
-                {/* Head */}
-                <circle cx="50" cy="46" r="16" fill="#fbd38d" />
-                {/* Cheerful Expression */}
-                <circle cx="45" cy="45" r="2" fill="#2d3748" />
-                <circle cx="55" cy="45" r="2" fill="#2d3748" />
-                <path d="M46 51 Q50 55 54 51" stroke="#2d3748" strokeWidth="1.5" strokeLinecap="round" />
-                {/* Body / Shirt (Yellow) */}
-                <path d="M36 62 L64 62 L60 85 L40 85 Z" fill="#f6e05e" />
-                {/* Arms waving */}
-                <path d="M36 64 L24 50 L28 48 L38 60 Z" fill="#fbd38d" />
-                <path d="M64 64 L76 50 L72 48 L62 60 Z" fill="#fbd38d" />
-              </svg>
-            </div>
-
-            {/* Right 4 */}
-            <span className="text-[100px] md:text-[140px] font-black text-[#58184d] leading-none drop-shadow-md">
-              4
-            </span>
+        {/* Left Column - Doctors Image & 404 text */}
+        <div className="relative rounded-[32px] overflow-hidden bg-white shadow-sm border border-gray-100 flex flex-col h-full min-h-[450px]">
+          <div className="flex-1 relative w-full h-full bg-blue-50/30 flex items-end justify-center">
+            {/* 
+              Using an unsplash image for doctors as a placeholder. 
+              In production, you can replace this with a transparent PNG of your doctors.
+            */}
+            <img 
+              src="/images/doctors-team.jpg" 
+              alt="Our Doctors" 
+              className="w-full h-full object-cover object-center" 
+            />
           </div>
-
-          {/* "page not found" subtitle */}
-          <div className="text-[24px] md:text-[28px] font-bold text-[#0081a0] italic tracking-wide mt-2">
-            page not found
+          {/* Blue Overlay Bar */}
+          <div className="bg-[#00739d] text-white text-center py-6 px-4 absolute bottom-0 left-0 right-0 rounded-b-[32px]">
+            <h1 className="text-5xl md:text-6xl font-bold flex items-center justify-center gap-2 mb-2 tracking-wide">
+              4 <Smile className="w-12 h-12 md:w-14 md:h-14" strokeWidth={2.5} /> 4
+            </h1>
+            <p className="text-lg md:text-xl font-medium tracking-wide">
+              Don't panic our Doctors here!
+            </p>
           </div>
         </div>
 
-        {/* Message */}
-        <p className="text-[16px] md:text-[18px] text-[#2b5c92] font-semibold mt-4">
-          We&apos;re sorry. The page you requested does not exist on visit the{' '}
-          <Link 
-            href="/" 
-            className="text-[#0081a0] underline hover:text-[#622060] font-bold transition-colors"
-          >
-            Home Page
+        {/* Right Column - Action Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 h-full">
+          {/* Card 1: Book Appointment */}
+          <Link href="/appointments" className="bg-[#fdf9eb] hover:bg-[#fcf5e1] transition-colors rounded-[24px] p-6 flex flex-col items-center justify-center text-center shadow-sm border border-[#f5ead2]/40 h-full min-h-[200px]">
+            <div className="mb-4 text-7xl filter drop-shadow-md transform hover:scale-110 transition-transform">
+              📅
+            </div>
+            <h3 className="text-[#004e66] font-medium text-[16px]">Book Appointment</h3>
           </Link>
-        </p>
 
-        {/* Quick Return Button */}
-        <div className="mt-8 flex gap-4">
-          <Link
-            href="/"
-            className="px-6 py-2.5 bg-[#622060] hover:bg-[#50164e] text-white font-semibold rounded-full text-[14px] shadow-sm transition-colors"
-          >
-            Go to Main Hospital Page
+          {/* Card 2: Find a Doctor */}
+          <Link href="/doctors" className="bg-[#f2fbfa] hover:bg-[#eaf8f7] transition-colors rounded-[24px] p-6 flex flex-col items-center justify-center text-center shadow-sm border border-[#dff1f5]/40 h-full min-h-[200px]">
+            <div className="mb-4 text-7xl filter drop-shadow-md transform hover:scale-110 transition-transform">
+              👨🏻‍⚕️
+            </div>
+            <h3 className="text-[#004e66] font-medium text-[16px]">Find a Doctor</h3>
           </Link>
-          <Link
-            href="/doctors"
-            className="px-6 py-2.5 border border-[#622060] text-[#622060] hover:bg-[#622060] hover:text-white font-semibold rounded-full text-[14px] transition-colors"
-          >
-            Find a Doctor
+
+          {/* Card 3: Book Health Checkup */}
+          <Link href="/health-checkup" className="bg-[#f0fcf7] hover:bg-[#e7f9f3] transition-colors rounded-[24px] p-6 flex flex-col items-center justify-center text-center shadow-sm border border-[#cff2e8]/40 h-full min-h-[200px]">
+            <div className="mb-4 text-7xl filter drop-shadow-md transform hover:scale-110 transition-transform flex items-center justify-center gap-0">
+              📋
+            </div>
+            <h3 className="text-[#004e66] font-medium text-[16px]">Book Health Checkup</h3>
+          </Link>
+
+          {/* Card 4: Request a Call back */}
+          <Link href="/contact" className="bg-[#f0fcfb] hover:bg-[#e7f9f7] transition-colors rounded-[24px] p-6 flex flex-col items-center justify-center text-center shadow-sm border border-[#d9edf9]/40 h-full min-h-[200px]">
+            <div className="mb-4 text-7xl filter drop-shadow-md transform hover:scale-110 transition-transform text-blue-600">
+              📞
+            </div>
+            <h3 className="text-[#004e66] font-medium text-[16px]">Request a Call back</h3>
           </Link>
         </div>
 
       </div>
-
     </div>
   );
 }

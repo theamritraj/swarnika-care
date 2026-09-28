@@ -23,6 +23,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
 import com.swarnikacare.patient.entity.PatientNewbornDetail;
 import com.swarnikacare.patient.repository.PatientNewbornDetailRepository;
 import com.swarnikacare.patient.dto.RegisterNewbornRequest;
@@ -34,12 +36,31 @@ public class PatientServiceImpl implements PatientService {
     private static final Logger log = LoggerFactory.getLogger(PatientServiceImpl.class);
     
     private final PatientRepository patientRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
     private PatientHospitalRegistrationService registrationService;
     private PatientNewbornDetailRepository newbornDetailRepo;
     private PatientRelationshipService relationshipService;
 
-    public PatientServiceImpl(PatientRepository patientRepository) {
+    public PatientServiceImpl(PatientRepository patientRepository, RedisTemplate<String, Object> redisTemplate) {
         this.patientRepository = patientRepository;
+        this.redisTemplate = redisTemplate;
+    }
+    
+    private String getPatientCacheKey(Long id) {
+        return "swarnika:prod:patient:profile:" + id;
+    }
+    
+    private String getPatientUserIdCacheKey(String userId) {
+        return "swarnika:prod:patient:profile:userid:" + userId;
+    }
+    
+    private void evictPatientCache(Long id, String userId) {
+        try {
+            redisTemplate.delete(getPatientCacheKey(id));
+            if (userId != null) {
+                redisTemplate.delete(getPatientUserIdCacheKey(userId));
+            }
+        } catch (Exception e) {}
     }
 
     @Autowired(required = false)
@@ -157,21 +178,51 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     @Override
     public PatientResponse getPatientByUserId(String userId) {
+        String cacheKey = getPatientUserIdCacheKey(userId);
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                if (cached instanceof PatientResponse) return (PatientResponse) cached;
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                return mapper.convertValue(cached, PatientResponse.class);
+            }
+        } catch (Exception e) {}
+
         Patient patient = patientRepository.findByUserId(userId)
                 .orElseThrow(() -> new PatientNotFoundException("Patient not found with user id: " + userId));
-        return mapToResponse(patient);
+        PatientResponse res = mapToResponse(patient);
+        try {
+            redisTemplate.opsForValue().set(cacheKey, res, Duration.ofMinutes(60));
+        } catch (Exception e) {}
+        return res;
     }
     
     @Transactional(readOnly = true)
     @Override
     public PatientResponse getPatientById(Long id) {
+        String cacheKey = getPatientCacheKey(id);
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                if (cached instanceof PatientResponse) return (PatientResponse) cached;
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                return mapper.convertValue(cached, PatientResponse.class);
+            }
+        } catch (Exception e) {}
+
         log.info("Fetching patient by id: {}", id);
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Patient not found with id: {}", id);
                     return new PatientNotFoundException("Patient not found with id: " + id);
                 });
-        return mapToResponse(patient);
+        PatientResponse res = mapToResponse(patient);
+        try {
+            redisTemplate.opsForValue().set(cacheKey, res, Duration.ofMinutes(60));
+        } catch (Exception e) {}
+        return res;
     }
     
     @Transactional(readOnly = true)
@@ -213,6 +264,8 @@ public class PatientServiceImpl implements PatientService {
         Patient updatedPatient = patientRepository.save(patient);
         log.info("Successfully updated patient with id: {}", id);
         
+        evictPatientCache(id, updatedPatient.getUserId());
+        
         return mapToResponse(updatedPatient);
     }
     
@@ -241,6 +294,9 @@ public class PatientServiceImpl implements PatientService {
 
         Patient updated = patientRepository.save(patient);
         log.info("Patient self-update complete for patientId: {}", updated.getId());
+        
+        evictPatientCache(updated.getId(), updated.getUserId());
+        
         return mapToResponse(updated);
     }
 
@@ -252,7 +308,9 @@ public class PatientServiceImpl implements PatientService {
             log.error("Patient not found for deletion with id: {}", id);
             throw new PatientNotFoundException("Patient not found with id: " + id);
         }
+        Patient p = patientRepository.findById(id).orElse(null);
         patientRepository.deleteById(id);
+        if (p != null) evictPatientCache(id, p.getUserId());
         log.info("Successfully deleted patient with id: {}", id);
     }
 

@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: lab-service
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 5000ms
   datasource:
     url: jdbc:mysql://localhost:3306/lab_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: swarnika

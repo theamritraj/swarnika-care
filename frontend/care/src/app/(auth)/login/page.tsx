@@ -52,12 +52,18 @@ export default function LoginPage() {
             
             if (res.ok && data.success) {
                 const roles = data.data?.user?.roles || [];
-                if (roles.includes('SUPER_ADMIN')) {
+                if (roles.includes('SUPER_ADMIN') || roles.includes('HOSPITAL_ADMIN')) {
                     window.location.href = '/admin';
                 } else if (roles.includes('DOCTOR')) {
-                    window.location.href = '/doctor';
+                    window.location.href = '/doctor/dashboard';
                 } else if (roles.includes('RECEPTIONIST')) {
                     window.location.href = '/staff/reception/dashboard';
+                } else if (roles.includes('NURSE')) {
+                    window.location.href = '/staff/nurse/dashboard';
+                } else if (roles.includes('BILLING_STAFF')) {
+                    window.location.href = '/staff/billing/dashboard';
+                } else if (roles.includes('LAB_TECHNICIAN')) {
+                    window.location.href = '/staff/lab/dashboard';
                 } else if (roles.includes('PATIENT')) {
                     window.location.href = '/patient/dashboard';
                 } else {

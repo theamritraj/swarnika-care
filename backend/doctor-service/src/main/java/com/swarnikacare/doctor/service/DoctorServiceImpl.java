@@ -19,9 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.Duration;
 
 @Service
 public class DoctorServiceImpl implements DoctorService {
@@ -32,16 +34,31 @@ public class DoctorServiceImpl implements DoctorService {
     private final IamClient iamClient;
     private final DoctorProfileRepository profileRepository;
     private final DoctorHospitalAssignmentRepository assignmentRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public DoctorServiceImpl(
             DoctorRepository doctorRepository,
             IamClient iamClient,
             DoctorProfileRepository profileRepository,
-            DoctorHospitalAssignmentRepository assignmentRepository) {
+            DoctorHospitalAssignmentRepository assignmentRepository,
+            RedisTemplate<String, Object> redisTemplate) {
         this.doctorRepository = doctorRepository;
         this.iamClient = iamClient;
         this.profileRepository = profileRepository;
         this.assignmentRepository = assignmentRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+    private String getDoctorCacheKey(Long id) {
+        return "swarnika:prod:doctor:profile:" + id;
+    }
+    
+    private void evictDoctorCache(Long id) {
+        try {
+            redisTemplate.delete(getDoctorCacheKey(id));
+        } catch (Exception e) {
+            log.warn("Redis unavailable during cache eviction", e);
+        }
     }
 
     @Override
@@ -104,13 +121,35 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public DoctorResponse getDoctorById(Long id) {
+        String cacheKey = getDoctorCacheKey(id);
+        
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                log.info("Doctor profile cache hit for id: {}", id);
+                if (cached instanceof DoctorResponse) return (DoctorResponse) cached;
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                return mapper.convertValue(cached, DoctorResponse.class);
+            }
+        } catch (Exception e) {
+            log.warn("Redis unavailable, proceeding to DB lookup", e);
+        }
+
         log.info("Fetching doctor by id: {}", id);
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Doctor not found with id: {}", id);
                     return new DoctorNotFoundException("Doctor not found with id: " + id);
                 });
-        return mapToResponse(doctor);
+                
+        DoctorResponse response = mapToResponse(doctor);
+        
+        try {
+            redisTemplate.opsForValue().set(cacheKey, response, Duration.ofMinutes(15));
+        } catch (Exception e) {}
+        
+        return response;
     }
 
     @Override
@@ -174,6 +213,8 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor updatedDoctor = doctorRepository.save(doctor);
         log.info("Successfully updated doctor with id: {}", id);
         
+        evictDoctorCache(id);
+        
         return mapToResponse(updatedDoctor);
     }
 
@@ -186,6 +227,7 @@ public class DoctorServiceImpl implements DoctorService {
             throw new DoctorNotFoundException("Doctor not found with id: " + id);
         }
         doctorRepository.deleteById(id);
+        evictDoctorCache(id);
         log.info("Successfully deleted doctor with id: {}", id);
     }
     

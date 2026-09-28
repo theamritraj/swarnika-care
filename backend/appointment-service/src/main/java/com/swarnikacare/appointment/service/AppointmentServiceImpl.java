@@ -32,6 +32,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
+import java.util.UUID;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -54,6 +57,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final OrganizationClient organizationClient;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${kafka.topic.appointment.booked:appointment.booked}")
     private String appointmentBookedTopic;
@@ -73,7 +77,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                                   DoctorClient doctorClient,
                                   OrganizationClient organizationClient,
                                   OutboxEventRepository outboxEventRepository,
-                                  ObjectMapper objectMapper) {
+                                  ObjectMapper objectMapper,
+                                  RedisTemplate<String, Object> redisTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.doctorScheduleLockRepository = doctorScheduleLockRepository;
         this.patientClient = patientClient;
@@ -81,6 +86,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.organizationClient = organizationClient;
         this.outboxEventRepository = outboxEventRepository;
         this.objectMapper = objectMapper;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -108,10 +114,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         validateDoctorAvailability(request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), request.getEndTime());
 
-        acquireDoctorLock(request.getDoctorId());
-        checkDoubleBooking(request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), request.getEndTime(), null);
+        String lockToken = UUID.randomUUID().toString();
+        acquireSlotLock(request.getHospitalId(), request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), lockToken);
 
-        Appointment appointment = new Appointment();
+        try {
+            acquireDoctorLock(request.getDoctorId());
+            checkDoubleBooking(request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), request.getEndTime(), null);
+
+            Appointment appointment = new Appointment();
         appointment.setAppointmentNumber(generateAppointmentNumber());
         appointment.setPatientId(request.getPatientId());
         appointment.setDoctorId(request.getDoctorId());
@@ -131,6 +141,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         publishAppointmentEvent(saved, patientData, doctorData, hospitalData, appointmentBookedTopic, "AppointmentBookedEvent");
 
         return mapToResponse(saved);
+        } finally {
+            releaseSlotLock(request.getHospitalId(), request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), lockToken);
+        }
     }
 
     @Override
@@ -273,6 +286,32 @@ public class AppointmentServiceImpl implements AppointmentService {
         } catch (Exception e) {
             // Concurrent insert might fail, wait and retry or just rely on the read lock
             log.warn("Doctor lock acquisition contention for {}", doctorId);
+        }
+    }
+
+    private void acquireSlotLock(Long hospitalId, Long doctorId, LocalDate date, LocalTime slot, String lockToken) {
+        String key = "swarnika:prod:appointment:lock:hospital:" + hospitalId + ":doctor:" + doctorId + ":" + date + ":" + slot;
+        Boolean acquired = false;
+        try {
+            acquired = redisTemplate.opsForValue().setIfAbsent(key, lockToken, Duration.ofSeconds(30));
+        } catch (Exception e) {
+            log.warn("Redis unavailable, proceeding with DB lock only", e);
+            return;
+        }
+        if (Boolean.FALSE.equals(acquired)) {
+            throw new AppointmentConflictException("This slot is currently being booked by someone else. Please try again or choose another slot.");
+        }
+    }
+
+    private void releaseSlotLock(Long hospitalId, Long doctorId, LocalDate date, LocalTime slot, String lockToken) {
+        String key = "swarnika:prod:appointment:lock:hospital:" + hospitalId + ":doctor:" + doctorId + ":" + date + ":" + slot;
+        try {
+            Object current = redisTemplate.opsForValue().get(key);
+            if (lockToken.equals(current)) {
+                redisTemplate.delete(key);
+            }
+        } catch (Exception e) {
+            log.warn("Redis unavailable during lock release", e);
         }
     }
 

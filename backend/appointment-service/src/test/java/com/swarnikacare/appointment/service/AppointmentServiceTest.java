@@ -56,6 +56,9 @@ class AppointmentServiceTest {
     @Mock
     private com.swarnikacare.appointment.outbox.OutboxEventRepository outboxEventRepository;
 
+    @Mock
+    private org.springframework.data.redis.core.RedisTemplate<String, Object> redisTemplate;
+
     // Removed mock authentication
 
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -69,7 +72,7 @@ class AppointmentServiceTest {
     void setUp() {
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        appointmentService = new AppointmentServiceImpl(appointmentRepository, doctorScheduleLockRepository, patientClient, doctorClient, organizationClient, outboxEventRepository, objectMapper);
+        appointmentService = new AppointmentServiceImpl(appointmentRepository, doctorScheduleLockRepository, patientClient, doctorClient, organizationClient, outboxEventRepository, objectMapper, redisTemplate);
         
         request = new AppointmentCreateRequest();
         request.setPatientId(1L);

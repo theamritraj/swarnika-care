@@ -168,10 +168,37 @@ export function Navbar() {
               className="relative py-6 cursor-pointer group"
               onMouseEnter={() => setActiveMenu('specialties')}
             >
-              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors">
+              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors h-full">
                 <span>Specialties</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeMenu === 'specialties' ? 'rotate-180 text-[#622060]' : 'text-gray-400'}`} />
               </div>
+              
+              {/* Compact Dropdown */}
+              {activeMenu === 'specialties' && (
+                <div className="absolute top-full left-0 w-[300px] bg-white rounded-b-xl shadow-lg border-t border-gray-100 py-3 z-50 flex flex-col animate-in fade-in slide-in-from-top-2">
+                  <Link href="/specialities?tab=aesthetic" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Aesthetic and Functional Gynecology
+                  </Link>
+                  <Link href="/specialities?tab=maternity" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Maternity <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/specialities?tab=fetal" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Fetal Medicine <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/specialities?tab=gynecology" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Gynecology <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/specialities?tab=pediatrics" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Pediatrics <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/specialities?tab=genetics" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Department of Medical Genetics
+                  </Link>
+                  <Link href="/specialities?tab=fertility" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Fertility
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Our Centres Dropdown */}
@@ -179,31 +206,73 @@ export function Navbar() {
               className="relative py-6 cursor-pointer group"
               onMouseEnter={() => setActiveMenu('centres')}
             >
-              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors">
+              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors h-full">
                 <span>Our Centres</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeMenu === 'centres' ? 'rotate-180 text-[#622060]' : 'text-gray-400'}`} />
               </div>
+
+              {/* Compact Dropdown */}
+              {activeMenu === 'centres' && (
+                <div className="absolute top-full left-0 w-[240px] bg-white rounded-b-xl shadow-lg border-t border-gray-100 py-3 z-50 flex flex-col animate-in fade-in slide-in-from-top-2">
+                  <Link href="/centres?city=sasaram" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Sasaram <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                </div>
+              )}
             </div>
 
-            {/* Our Doctors Link */}
-            <Link 
-              href="/doctors" 
-              className="hover:text-[#622060] transition-colors py-6"
+            {/* Our Doctors Dropdown */}
+            <div 
+              className="relative py-6 cursor-pointer group"
+              onMouseEnter={() => setActiveMenu('doctors')}
             >
-              Our Doctors
-            </Link>
+              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors h-full">
+                <span>Our Doctors</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeMenu === 'doctors' ? 'rotate-180 text-[#622060]' : 'text-gray-400'}`} />
+              </div>
+
+              {/* Compact Dropdown */}
+              {activeMenu === 'doctors' && (
+                <div className="absolute top-full left-0 w-[240px] bg-white rounded-b-xl shadow-lg border-t border-gray-100 py-3 z-50 flex flex-col animate-in fade-in slide-in-from-top-2">
+                  <Link href="/doctors?city=sasaram" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Sasaram <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                </div>
+              )}
+            </div>
 
             {/* Preggo & Mother Care Dropdown */}
             <div 
               className="relative py-6 cursor-pointer group"
               onMouseEnter={() => setActiveMenu('preggo')}
             >
-              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors">
+              <div className="flex items-center gap-1 hover:text-[#622060] transition-colors h-full">
                 <span className="flex items-center gap-1">
-                  Preggo <span className="bg-[#ffeaf3] text-[#622060] text-[9.5px] font-bold px-1.5 py-0.2 rounded-full">Guide</span>
+                  Swarnika <span className="bg-[#ffeaf3] text-[#622060] text-[9.5px] font-bold px-1.5 py-0.2 rounded-full">Bloom</span>
                 </span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeMenu === 'preggo' ? 'rotate-180 text-[#622060]' : 'text-gray-400'}`} />
               </div>
+              
+              {/* Compact Dropdown */}
+              {activeMenu === 'preggo' && (
+                <div className="absolute top-full left-0 w-[240px] bg-white rounded-b-xl shadow-lg border-t border-gray-100 py-3 z-50 flex flex-col animate-in fade-in slide-in-from-top-2">
+                  <Link href="/blogs/1" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    What is Swarnika Bloom? <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/blogs/1" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Preconception <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/blogs/1" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Pregnancy <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/blogs/1" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Post Natal <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                  <Link href="/blogs/1" className="px-6 py-3 text-[14.5px] font-bold text-[#5c1c5b] hover:bg-gray-50 flex items-center justify-between transition-colors">
+                    Your Baby <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Contact Us */}
@@ -259,177 +328,6 @@ export function Navbar() {
       {/* ========================================================= */}
       {/* DESKTOP MEGA MENUS (Maternity & Children Focused)          */}
       {/* ========================================================= */}
-      {activeMenu && (
-        <div className="hidden xl:block absolute top-[74px] left-0 w-full bg-white border-t border-gray-100 shadow-xl animate-in fade-in slide-in-from-top-1 duration-200">
-          
-          {/* SPECIALTIES MENU */}
-          {activeMenu === 'specialties' && (
-            <div className="max-w-7xl mx-auto py-8 px-8">
-              <div className="grid grid-cols-4 gap-8">
-                
-                {/* Column 1: Maternity */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3.5 text-[#622060] font-bold text-[15px]">
-                    <Baby className="w-5 h-5 text-[#622060]" />
-                    <h4>Maternity Care</h4>
-                  </div>
-                  <ul className="flex flex-col gap-2.5 text-[13.5px] text-gray-600">
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Pre-Conception Check-Up</Link></li>
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Comprehensive Pregnancy Care</Link></li>
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Normal & Painless Delivery</Link></li>
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">High-Risk Pregnancy</Link></li>
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">C-Section & VBAC</Link></li>
-                    <li><Link href="/specialities?tab=maternity" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Postnatal & Lactation Support</Link></li>
-                  </ul>
-                </div>
-
-                {/* Column 2: Pediatrics & Neonatology */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3.5 text-[#0081a0] font-bold text-[15px]">
-                    <Sparkles className="w-5 h-5 text-[#0081a0]" />
-                    <h4>Pediatrics & NICU</h4>
-                  </div>
-                  <ul className="flex flex-col gap-2.5 text-[13.5px] text-gray-600">
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Level-III Neonatal ICU (NICU)</Link></li>
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Pediatric Intensive Care (PICU)</Link></li>
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Newborn Health Screening</Link></li>
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Child Immunization & Vaccines</Link></li>
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Pediatric Emergency 24/7</Link></li>
-                    <li><Link href="/specialities?tab=pediatrics" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Growth & Nutrition Clinic</Link></li>
-                  </ul>
-                </div>
-
-                {/* Column 3: Gynecology & Laparoscopy */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3.5 text-[#622060] font-bold text-[15px]">
-                    <Stethoscope className="w-5 h-5 text-[#622060]" />
-                    <h4>Gynecology & Surgery</h4>
-                  </div>
-                  <ul className="flex flex-col gap-2.5 text-[13.5px] text-gray-600">
-                    <li><Link href="/specialities?tab=gynecology" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Advanced Laparoscopic Surgery</Link></li>
-                    <li><Link href="/specialities?tab=gynecology" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">PCOS & PCOD Management</Link></li>
-                    <li><Link href="/specialities?tab=gynecology" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Fibroid & Ovarian Cyst Clinic</Link></li>
-                    <li><Link href="/specialities?tab=gynecology" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Adolescent & Menopause Health</Link></li>
-                    <li><Link href="/specialities?tab=gynecology" className="hover:text-[#622060] hover:translate-x-1 inline-block transition-transform">Infertility & Fertility Surgery</Link></li>
-                  </ul>
-                </div>
-
-                {/* Column 4: Fetal Medicine & Diagnostics */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3.5 text-[#0081a0] font-bold text-[15px]">
-                    <HeartHandshake className="w-5 h-5 text-[#0081a0]" />
-                    <h4>Fetal Medicine</h4>
-                  </div>
-                  <ul className="flex flex-col gap-2.5 text-[13.5px] text-gray-600">
-                    <li><Link href="/specialities?tab=fetal" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">First Trimester NT Scan</Link></li>
-                    <li><Link href="/specialities?tab=fetal" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Targeted Anomaly Scan (TIFFA)</Link></li>
-                    <li><Link href="/specialities?tab=fetal" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Fetal 3D/4D Ultrasound & Echo</Link></li>
-                    <li><Link href="/specialities?tab=fetal" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Genetic Screening & Amniocentesis</Link></li>
-                    <li><Link href="/specialities?tab=fetal" className="hover:text-[#0081a0] hover:translate-x-1 inline-block transition-transform">Multiple Pregnancy Surveillance</Link></li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Bottom Strip */}
-              <div className="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between text-[13px]">
-                <span className="text-gray-500 font-medium">
-                  Leading destination for Mother & Child Healthcare in Sasaram, Rohtas
-                </span>
-                <Link 
-                  href="/specialities" 
-                  className="font-bold text-[#622060] hover:underline flex items-center gap-1"
-                >
-                  View All Mother & Child Specialties <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* OUR CENTRES MENU */}
-          {activeMenu === 'centres' && (
-            <div className="max-w-7xl mx-auto py-8 px-8">
-              <div className="grid grid-cols-3 gap-8">
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#622060]/30 transition-colors">
-                  <div className="flex items-center gap-2 mb-2 font-bold text-[#622060] text-[15px]">
-                    <MapPin className="w-4 h-4" />
-                    <h4>Swarnika Hospital (Main Centre)</h4>
-                  </div>
-                  <p className="text-[13px] text-gray-600 mb-3">
-                    Super-speciality Maternity, Neonatal ICU (NICU) & Pediatric Care Centre.
-                  </p>
-                  <span className="text-[12px] font-semibold text-[#0081a0]">Sasaram, Rohtas, Bihar 821115</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#622060]/30 transition-colors">
-                  <div className="flex items-center gap-2 mb-2 font-bold text-[#622060] text-[15px]">
-                    <MapPin className="w-4 h-4" />
-                    <h4>Upcoming Facilities</h4>
-                  </div>
-                  <p className="text-[13px] text-gray-600 mb-3">
-                    Expanding across Dehri-on-Sone, Rohtas District, Patna & Varanasi soon.
-                  </p>
-                  <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">Coming Soon</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#ffeaf3] border border-[#622060]/20 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-bold text-[#622060] text-[15px] mb-1">24x7 Maternity Emergency</h4>
-                    <p className="text-[13px] text-gray-700">Immediate admission, emergency labor rooms and on-call gynecologists & neonatologists.</p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-[#622060]/20 flex items-center justify-between">
-                    <span className="font-bold text-[14px] text-[#622060]">Emergency: 1066</span>
-                    <Link href="/book" className="text-[12px] font-bold text-white bg-[#622060] px-3 py-1 rounded-full">Book Bed</Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PREGGO MOTHER CARE HUB MENU */}
-          {activeMenu === 'preggo' && (
-            <div className="max-w-7xl mx-auto py-8 px-8">
-              <div className="grid grid-cols-4 gap-8">
-                <div>
-                  <h4 className="font-bold text-[#622060] text-[14.5px] mb-3">Pregnancy Tools</h4>
-                  <ul className="flex flex-col gap-2 text-[13px] text-gray-600">
-                    <li><Link href="/#calculator" className="hover:text-[#622060] font-medium">Pregnancy Due Date Calculator</Link></li>
-                    <li><Link href="/#calculator" className="hover:text-[#622060]">Ovulation & Fertility Calendar</Link></li>
-                    <li><Link href="/#calculator" className="hover:text-[#622060]">Estimated Fetal Age Checker</Link></li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-[#622060] text-[14.5px] mb-3">Trimester Guides</h4>
-                  <ul className="flex flex-col gap-2 text-[13px] text-gray-600">
-                    <li><Link href="/#blogs" className="hover:text-[#622060]">First Trimester Diet & Care</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#622060]">Second Trimester Anomaly Scans</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#622060]">Third Trimester & Labor Readiness</Link></li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-[#0081a0] text-[14.5px] mb-3">Childbirth & Parenting</h4>
-                  <ul className="flex flex-col gap-2 text-[13px] text-gray-600">
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">Normal vs Cesarean Delivery FAQs</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">Breastfeeding & Latch Counseling</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">Postpartum Recovery Tips</Link></li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-[#0081a0] text-[14.5px] mb-3">Newborn & Infant</h4>
-                  <ul className="flex flex-col gap-2 text-[13px] text-gray-600">
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">Newborn Vaccination Chart</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">Infant Weight & Height Milestones</Link></li>
-                    <li><Link href="/#blogs" className="hover:text-[#0081a0]">When to Visit Pediatrician</Link></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      )}
 
       {/* ========================================================= */}
       {/* MOBILE & TABLET DRAWER NAVIGATION                       */}

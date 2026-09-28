@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
+import java.time.Duration;
+import org.springframework.data.redis.core.RedisTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -17,46 +20,89 @@ public class IpdOrchestrationService {
     private final OrganizationClient orgClient;
     private final BedTransferRepository transferRepo;
     private final BillingClient billingClient;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public void assignBed(Long admissionId, Long toBedId, Long hospitalId) {
-        // Mark new bed as OCCUPIED
-        Map<String, String> payload = new HashMap<>(); payload.put("status", "OCCUPIED");
-        orgClient.updateBedStatus(toBedId, payload);
+        String lockToken = UUID.randomUUID().toString();
+        String lockKey = "swarnika:prod:ipd:lock:hospital:" + hospitalId + ":bed:" + toBedId;
         
-        // Update admission status and bedId in encounter-service
-        encounterClient.updateAdmissionStatus(admissionId, "ADMITTED", toBedId, "Bed assigned via IPD");
-        
-        // Create tracking record (Initial transfer from NULL bed to toBedId)
-        BedTransfer transfer = new BedTransfer();
-        transfer.setAdmissionId(admissionId);
-        transfer.setToBedId(toBedId);
-        transfer.setHospitalId(hospitalId);
-        transfer.setTransferReason("Initial Assignment");
-        transferRepo.save(transfer);
+        try {
+            Boolean acquired = false;
+            try {
+                acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, lockToken, Duration.ofSeconds(30));
+            } catch (Exception e) {
+                // Redis failure should not completely block admission, DB authority will prevail
+            }
+            if (Boolean.FALSE.equals(acquired)) {
+                throw new IllegalStateException("Bed is currently being allocated by another process.");
+            }
+
+            // Mark new bed as OCCUPIED
+            Map<String, String> payload = new HashMap<>(); payload.put("status", "OCCUPIED");
+            orgClient.updateBedStatus(toBedId, payload);
+            
+            // Update admission status and bedId in encounter-service
+            encounterClient.updateAdmissionStatus(admissionId, "ADMITTED", toBedId, "Bed assigned via IPD");
+            
+            // Create tracking record (Initial transfer from NULL bed to toBedId)
+            BedTransfer transfer = new BedTransfer();
+            transfer.setAdmissionId(admissionId);
+            transfer.setToBedId(toBedId);
+            transfer.setHospitalId(hospitalId);
+            transfer.setTransferReason("Initial Assignment");
+            transferRepo.save(transfer);
+        } finally {
+            try {
+                Object current = redisTemplate.opsForValue().get(lockKey);
+                if (lockToken.equals(current)) {
+                    redisTemplate.delete(lockKey);
+                }
+            } catch (Exception e) {}
+        }
     }
     
     @Transactional
     public void transferBed(Long admissionId, Long fromBedId, Long toBedId, Long hospitalId) {
-        // Release old bed
-        Map<String, String> releasePayload = new HashMap<>(); releasePayload.put("status", "CLEANING");
-        orgClient.updateBedStatus(fromBedId, releasePayload);
+        String lockToken = UUID.randomUUID().toString();
+        String toBedLockKey = "swarnika:prod:ipd:lock:hospital:" + hospitalId + ":bed:" + toBedId;
         
-        // Occupy new bed
-        Map<String, String> occupyPayload = new HashMap<>(); occupyPayload.put("status", "OCCUPIED");
-        orgClient.updateBedStatus(toBedId, occupyPayload);
-        
-        // Update admission with new bed
-        encounterClient.updateAdmissionStatus(admissionId, "ADMITTED", toBedId, "Transferred via IPD");
-        
-        // Tracking
-        BedTransfer transfer = new BedTransfer();
-        transfer.setAdmissionId(admissionId);
-        transfer.setFromBedId(fromBedId);
-        transfer.setToBedId(toBedId);
-        transfer.setHospitalId(hospitalId);
-        transfer.setTransferReason("Patient Transfer");
-        transferRepo.save(transfer);
+        try {
+            Boolean acquired = false;
+            try {
+                acquired = redisTemplate.opsForValue().setIfAbsent(toBedLockKey, lockToken, Duration.ofSeconds(30));
+            } catch (Exception e) {}
+            if (Boolean.FALSE.equals(acquired)) {
+                throw new IllegalStateException("Target bed is currently being allocated by another process.");
+            }
+
+            // Release old bed
+            Map<String, String> releasePayload = new HashMap<>(); releasePayload.put("status", "CLEANING");
+            orgClient.updateBedStatus(fromBedId, releasePayload);
+            
+            // Occupy new bed
+            Map<String, String> occupyPayload = new HashMap<>(); occupyPayload.put("status", "OCCUPIED");
+            orgClient.updateBedStatus(toBedId, occupyPayload);
+            
+            // Update admission with new bed
+            encounterClient.updateAdmissionStatus(admissionId, "ADMITTED", toBedId, "Transferred via IPD");
+            
+            // Tracking
+            BedTransfer transfer = new BedTransfer();
+            transfer.setAdmissionId(admissionId);
+            transfer.setFromBedId(fromBedId);
+            transfer.setToBedId(toBedId);
+            transfer.setHospitalId(hospitalId);
+            transfer.setTransferReason("Patient Transfer");
+            transferRepo.save(transfer);
+        } finally {
+            try {
+                Object current = redisTemplate.opsForValue().get(toBedLockKey);
+                if (lockToken.equals(current)) {
+                    redisTemplate.delete(toBedLockKey);
+                }
+            } catch (Exception e) {}
+        }
     }
     
     @Transactional

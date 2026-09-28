@@ -39,6 +39,15 @@ mvn spring-boot:run -f nursing-service/pom.xml > nursing.log 2>&1 &
 echo "Starting Billing Service..."
 mvn spring-boot:run -f billing-service/pom.xml > billing.log 2>&1 &
 
+echo "Starting Pharmacy Service..."
+mvn spring-boot:run -f pharmacy-service/pom.xml > pharmacy.log 2>&1 &
+
+echo "Starting IPD Service..."
+mvn spring-boot:run -f ipd-service/pom.xml > ipd.log 2>&1 &
+
+echo "Starting Lab Service..."
+mvn spring-boot:run -f lab-service/pom.xml > lab.log 2>&1 &
+
 echo "Waiting for services to be up (45 seconds)..."
 sleep 45
 echo "Done starting services."

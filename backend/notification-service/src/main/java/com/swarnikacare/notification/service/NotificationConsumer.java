@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
+
+import java.time.Duration;
 
 @Service
 public class NotificationConsumer {
@@ -20,15 +23,29 @@ public class NotificationConsumer {
     private final NotificationRepository notificationRepository;
     private final NotificationDispatcher dispatcher;
     private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public NotificationConsumer(ProcessedEventRepository processedEventRepository, 
                               NotificationRepository notificationRepository,
                               NotificationDispatcher dispatcher,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper,
+                              RedisTemplate<String, String> redisTemplate) {
         this.processedEventRepository = processedEventRepository;
         this.notificationRepository = notificationRepository;
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
+        this.redisTemplate = redisTemplate;
+    }
+    
+    private boolean isDuplicateEvent(String eventId) {
+        String key = "swarnika:prod:notification:idempotency:" + eventId;
+        try {
+            Boolean isNew = redisTemplate.opsForValue().setIfAbsent(key, "PROCESSED", Duration.ofDays(7));
+            return Boolean.FALSE.equals(isNew);
+        } catch (Exception e) {
+            log.warn("Redis unavailable, falling back to DB for idempotency");
+            return processedEventRepository.existsByEventId(eventId);
+        }
     }
 
     // Generic listener for standard business events
@@ -46,7 +63,7 @@ public class NotificationConsumer {
                 throw new IllegalArgumentException("Malformed event: eventId is missing");
             }
 
-            if (processedEventRepository.existsByEventId(eventId)) {
+            if (isDuplicateEvent(eventId)) {
                 log.info("Event {} already processed. Idempotency kicking in.", eventId);
                 return;
             }
@@ -99,7 +116,7 @@ public class NotificationConsumer {
             // using admission id as event ID proxy for idempotency if no event ID exists
             String eventId = "discharge-" + event.getAdmissionId();
             
-            if (processedEventRepository.existsByEventId(eventId)) {
+            if (isDuplicateEvent(eventId)) {
                 log.info("Event {} already processed. Idempotency kicking in.", eventId);
                 return;
             }

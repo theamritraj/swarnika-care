@@ -25,9 +25,6 @@ export default async function BillingDashboard() {
                     </div>
                 </div>
             </div>
-            <form action="/api/auth/logout" method="POST">
-                <button type="submit" className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700">Logout</button>
-            </form>
         </div>
     );
 }

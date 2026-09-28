@@ -1,24 +1,24 @@
 package com.swarnikacare.iam.service;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swarnikacare.iam.entity.OtpPurpose;
-import com.swarnikacare.iam.entity.OtpVerification;
-import com.swarnikacare.iam.repository.OtpVerificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.time.Duration;
 
 @Service
 public class OtpServiceImpl implements OtpService {
 
     private static final Logger log = LoggerFactory.getLogger(OtpServiceImpl.class);
-    private final OtpVerificationRepository otpVerificationRepository;
+    
+    private final RedisTemplate<String, Object> redisTemplate;
     private final EmailSender emailSender;
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -35,75 +35,102 @@ public class OtpServiceImpl implements OtpService {
     @Value("${otp.dev-bypass:true}")
     private boolean devBypass;
 
-    public OtpServiceImpl(OtpVerificationRepository otpVerificationRepository, EmailSender emailSender, PasswordEncoder passwordEncoder) {
-        this.otpVerificationRepository = otpVerificationRepository;
+    public OtpServiceImpl(RedisTemplate<String, Object> redisTemplate, EmailSender emailSender, PasswordEncoder passwordEncoder) {
+        this.redisTemplate = redisTemplate;
         this.emailSender = emailSender;
         this.passwordEncoder = passwordEncoder;
     }
 
+    private String getOtpKey(String email, OtpPurpose purpose) {
+        return "swarnika:prod:iam:otp:" + purpose.name() + ":" + email.toLowerCase();
+    }
+
+    private String getCooldownKey(String email, OtpPurpose purpose) {
+        return "swarnika:prod:iam:otp-cooldown:" + purpose.name() + ":" + email.toLowerCase();
+    }
+
+    public static class OtpState {
+        private String otpHash;
+        private int attempts;
+
+        public OtpState() {}
+
+        @JsonCreator
+        public OtpState(@JsonProperty("otpHash") String otpHash, @JsonProperty("attempts") int attempts) {
+            this.otpHash = otpHash;
+            this.attempts = attempts;
+        }
+
+        public String getOtpHash() { return otpHash; }
+        public void setOtpHash(String otpHash) { this.otpHash = otpHash; }
+        public int getAttempts() { return attempts; }
+        public void setAttempts(int attempts) { this.attempts = attempts; }
+        public void incrementAttempts() { this.attempts++; }
+    }
+
     @Override
-    @Transactional
     public void generateAndSendOtp(String email, OtpPurpose purpose) {
-        Optional<OtpVerification> existingOtp = otpVerificationRepository.findTopByEmailAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(email, purpose);
+        String cooldownKey = getCooldownKey(email, purpose);
         
-        if (existingOtp.isPresent()) {
-            OtpVerification otp = existingOtp.get();
-            if (otp.getCreatedAt().plusSeconds(resendCooldownSeconds).isAfter(LocalDateTime.now())) {
-                log.warn("OTP request rate limited for email: {}", email);
-                throw new IllegalStateException("Please wait before requesting another OTP");
-            }
-            // Expire previous OTP by marking it consumed if we are generating a new one
-            otp.setConsumedAt(LocalDateTime.now());
-            otpVerificationRepository.save(otp);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            log.warn("OTP request rate limited for email: {}", email);
+            throw new IllegalStateException("Please wait before requesting another OTP");
         }
 
         String plainOtp = String.format("%06d", secureRandom.nextInt(1000000));
         String hashedOtp = passwordEncoder.encode(plainOtp);
+        
+        OtpState newState = new OtpState(hashedOtp, 0);
+        String otpKey = getOtpKey(email, purpose);
 
-        OtpVerification newOtp = new OtpVerification(
-                email,
-                hashedOtp,
-                purpose,
-                LocalDateTime.now().plusMinutes(expirationMinutes)
-        );
-        otpVerificationRepository.save(newOtp);
+        redisTemplate.opsForValue().set(otpKey, newState, Duration.ofMinutes(expirationMinutes));
+        redisTemplate.opsForValue().set(cooldownKey, "LOCKED", Duration.ofSeconds(resendCooldownSeconds));
 
         emailSender.sendOtp(email, plainOtp, purpose.name());
     }
 
     @Override
-    @Transactional
     public boolean verifyOtp(String email, String plainOtp, OtpPurpose purpose) {
-        Optional<OtpVerification> optionalOtp = otpVerificationRepository.findTopByEmailAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(email, purpose);
+        String otpKey = getOtpKey(email, purpose);
         
-        if (optionalOtp.isEmpty()) {
-            log.warn("No active OTP found for email: {}", email);
+        Object rawState = redisTemplate.opsForValue().get(otpKey);
+        
+        if (rawState == null) {
+            log.warn("No active/expired OTP found for email: {}", email);
             return false;
         }
 
-        OtpVerification otp = optionalOtp.get();
-
-        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
-            log.warn("OTP expired for email: {}", email);
-            return false;
+        // Handle deserialization from Redis
+        OtpState state;
+        if (rawState instanceof OtpState) {
+            state = (OtpState) rawState;
+        } else {
+            // Jackson might return a LinkedHashMap if not configured with class types
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            state = mapper.convertValue(rawState, OtpState.class);
         }
 
-        if (otp.getAttemptCount() >= maxAttempts) {
+        if (state.getAttempts() >= maxAttempts) {
             log.warn("Max OTP attempts reached for email: {}", email);
-            otp.setConsumedAt(LocalDateTime.now());
-            otpVerificationRepository.save(otp);
+            redisTemplate.delete(otpKey);
             return false;
         }
 
-        otp.incrementAttempt();
+        state.incrementAttempts();
 
-        if ((devBypass && "123456".equals(plainOtp)) || passwordEncoder.matches(plainOtp, otp.getOtpHash())) {
-            otp.setConsumedAt(LocalDateTime.now());
-            otpVerificationRepository.save(otp);
+        if ((devBypass && "123456".equals(plainOtp)) || passwordEncoder.matches(plainOtp, state.getOtpHash())) {
+            redisTemplate.delete(otpKey);
             return true;
         }
 
-        otpVerificationRepository.save(otp);
+        // Update attempts and keep TTL
+        Long expire = redisTemplate.getExpire(otpKey);
+        if (expire != null && expire > 0) {
+            redisTemplate.opsForValue().set(otpKey, state, Duration.ofSeconds(expire));
+        } else {
+            redisTemplate.delete(otpKey);
+        }
+        
         return false;
     }
 }

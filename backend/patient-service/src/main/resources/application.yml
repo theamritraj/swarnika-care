@@ -9,6 +9,10 @@ spring:
     baseline-version: 1
   application:
     name: patient-service
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 5000ms
   datasource:
     url: jdbc:mysql://localhost:3306/patient_db
     driver-class-name: com.mysql.cj.jdbc.Driver

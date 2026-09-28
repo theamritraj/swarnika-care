@@ -131,26 +131,6 @@ export default async function PatientDashboard() {
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Welcome Banner */}
-      <div className="rounded-2xl bg-gradient-to-br from-[#007b92] to-[#00566a] p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <p className="text-sm font-medium text-white/70 mb-1">{greeting},</p>
-            <h1 className="text-2xl font-bold">{patientName}</h1>
-            {patient?.mrn && (
-              <p className="text-sm text-white/60 mt-1">Patient ID: {patient.mrn}</p>
-            )}
-          </div>
-          <Link
-            href="/patient/doctors"
-            className="flex items-center gap-2 px-5 py-2.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl text-sm font-semibold transition-colors backdrop-blur-sm"
-          >
-            <Search className="w-4 h-4" />
-            Book Appointment
-          </Link>
-        </div>
-      </div>
-
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(stat => {

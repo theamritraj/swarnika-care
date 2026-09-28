@@ -72,17 +72,25 @@ export default function DoctorDashboard() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch current doctor
+      // 1. Fetch current doctor profile
       const meRes = await fetch('/api/proxy/api/v1/doctors/me');
       if (!meRes.ok) {
-        throw new Error(`Failed to load doctor profile (${meRes.status})`);
+        if (meRes.status === 404) {
+          throw new Error(
+            'Your doctor profile has not been set up yet. Please contact the hospital administrator to link your IAM account to a clinical profile.'
+          );
+        }
+        if (meRes.status === 401) {
+          throw new Error('Session expired. Please log in again.');
+        }
+        throw new Error(`Failed to load doctor profile (HTTP ${meRes.status})`);
       }
       const meJson = await meRes.json();
       const doc = meJson.data;
       setDoctor(doc);
 
       if (!doc || !doc.id) {
-        throw new Error('Doctor identity could not be verified');
+        throw new Error('Doctor identity could not be verified. Please contact the administrator.');
       }
 
       // 2. Fetch doctor appointments

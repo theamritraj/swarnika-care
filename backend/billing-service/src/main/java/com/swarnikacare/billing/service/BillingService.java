@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.Duration;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,11 +28,12 @@ public class BillingService {
     private final ChargeRepository chargeRepo;
     private final RefundRepository refundRepo;
     private final AdjustmentRepository adjRepo;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public BillingService(InvoiceRepository invoiceRepo, InvoiceItemRepository itemRepo,
                           PaymentRepository paymentRepo, ReceiptRepository receiptRepo,
                           ChargeRepository chargeRepo, RefundRepository refundRepo,
-                          AdjustmentRepository adjRepo) {
+                          AdjustmentRepository adjRepo, RedisTemplate<String, Object> redisTemplate) {
         this.invoiceRepo = invoiceRepo;
         this.itemRepo = itemRepo;
         this.paymentRepo = paymentRepo;
@@ -36,6 +41,27 @@ public class BillingService {
         this.chargeRepo = chargeRepo;
         this.refundRepo = refundRepo;
         this.adjRepo = adjRepo;
+        this.redisTemplate = redisTemplate;
+    }
+
+    private void checkIdempotency(String operation, String hashStr) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedhash = digest.digest(hashStr.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
+            for (byte b : encodedhash) {
+                String hex = Integer.toHexString(0xff & b);
+                if(hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            String key = "swarnika:prod:billing:idempotency:" + operation + ":" + hexString.toString();
+            Boolean isNew = redisTemplate.opsForValue().setIfAbsent(key, "PROCESSED", Duration.ofMinutes(5));
+            if (Boolean.FALSE.equals(isNew)) {
+                throw new IllegalStateException("Duplicate " + operation + " request detected. Please wait.");
+            }
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {}
     }
 
     // ─── Patient Self-Service ──────────────────────────────────────────────────
@@ -87,6 +113,9 @@ public class BillingService {
     // 1. Charges
     @Transactional
     public ChargeResponse createCharge(CreateChargeRequest req, String username) {
+        String hashStr = req.getPatientId() + "-" + req.getEncounterId() + "-" + req.getCategory() + "-" + req.getUnitPrice() + "-" + req.getQuantity();
+        checkIdempotency("charge", hashStr);
+        
         Charge c = new Charge();
         c.setPatientId(req.getPatientId());
         c.setHospitalId(req.getHospitalId());
@@ -169,6 +198,9 @@ public class BillingService {
     // 3. Payments
     @Transactional
     public PaymentResponse recordPayment(RecordPaymentRequest req, String username) {
+        String hashStr = req.getInvoiceId() + "-" + req.getAmount() + "-" + req.getPaymentMethod() + "-" + req.getTransactionRef();
+        checkIdempotency("payment", hashStr);
+
         Invoice inv = invoiceRepo.findById(req.getInvoiceId())
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found"));
 

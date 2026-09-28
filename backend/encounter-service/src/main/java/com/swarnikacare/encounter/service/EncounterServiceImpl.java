@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class EncounterServiceImpl implements EncounterService {
@@ -42,6 +45,19 @@ public class EncounterServiceImpl implements EncounterService {
     private OrganizationClient organizationClient;
     private DoctorClient doctorClient;
     private AppointmentClient appointmentClient;
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    private String getEncounterCacheKey(Long id) {
+        return "swarnika:prod:encounter:active:" + id;
+    }
+    
+    private void evictEncounterCache(Long id) {
+        try {
+            if (redisTemplate != null) {
+                redisTemplate.delete(getEncounterCacheKey(id));
+            }
+        } catch (Exception e) {}
+    }
 
     public EncounterServiceImpl(
             EncounterRepository encounterRepository,
@@ -55,6 +71,11 @@ public class EncounterServiceImpl implements EncounterService {
     @Autowired(required = false)
     public void setPatientClient(PatientClient patientClient) {
         this.patientClient = patientClient;
+    }
+
+    @Autowired(required = false)
+    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
     @Autowired(required = false)
@@ -143,10 +164,29 @@ public class EncounterServiceImpl implements EncounterService {
     @Override
     @Transactional(readOnly = true)
     public EncounterResponse getEncounterById(Long id) {
+        String cacheKey = getEncounterCacheKey(id);
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                EncounterResponse res = mapper.convertValue(cached, EncounterResponse.class);
+                authorizeHospitalAccess(res.getHospitalId());
+                return res;
+            }
+        } catch (Exception e) {}
+
         Encounter encounter = encounterRepository.findById(id)
                 .orElseThrow(() -> new EncounterNotFoundException("Encounter not found with id: " + id));
         authorizeHospitalAccess(encounter.getHospitalId());
-        return mapToResponse(encounter);
+        
+        EncounterResponse res = mapToResponse(encounter);
+        if (encounter.getStatus() == EncounterStatus.IN_PROGRESS || encounter.getStatus() == EncounterStatus.OPEN) {
+            try {
+                redisTemplate.opsForValue().set(cacheKey, res, Duration.ofHours(4));
+            } catch (Exception e) {}
+        }
+        return res;
     }
 
     @Override
@@ -200,6 +240,7 @@ public class EncounterServiceImpl implements EncounterService {
         encounter.setStartedAt(LocalDateTime.now());
         Encounter saved = encounterRepository.save(encounter);
         log.info("Encounter {} started successfully", id);
+        evictEncounterCache(id);
         return mapToResponse(saved);
     }
 
@@ -226,6 +267,7 @@ public class EncounterServiceImpl implements EncounterService {
 
         Encounter saved = encounterRepository.save(encounter);
         log.info("Encounter {} completed successfully", id);
+        evictEncounterCache(id);
         return mapToResponse(saved);
     }
 
@@ -252,6 +294,7 @@ public class EncounterServiceImpl implements EncounterService {
 
         Encounter saved = encounterRepository.save(encounter);
         log.info("Encounter {} cancelled successfully", id);
+        evictEncounterCache(id);
         return mapToResponse(saved);
     }
 
