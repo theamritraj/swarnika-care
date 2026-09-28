@@ -288,22 +288,12 @@ public class EmployeeService {
     private IamUserResponse resolveIamUser(String userId) {
         if (userId == null) return null;
         try {
-            Long numericId = Long.valueOf(userId);
+            String rawId = userId.startsWith("usr-") ? userId.substring(4) : userId;
+            Long numericId = Long.valueOf(rawId);
             return iamClient.getUserById(numericId);
-        } catch (NumberFormatException nfe) {
-            // Synthetic test user_id (e.g. empA, hospA_admin)
-            IamUserResponse mock = new IamUserResponse();
-            mock.setEmail(userId + "@swarnikacare.com");
-            mock.setRole("STAFF");
-            mock.setStatus("ACTIVE");
-            return mock;
         } catch (Exception ex) {
             log.warn("Could not fetch IAM user for userId {}: {}", userId, ex.getMessage());
-            IamUserResponse fallback = new IamUserResponse();
-            fallback.setEmail("user-" + userId + "@swarnikacare.com");
-            fallback.setRole("STAFF");
-            fallback.setStatus("ACTIVE");
-            return fallback;
+            return null;
         }
     }
 

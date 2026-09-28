@@ -143,12 +143,31 @@ async function runE2E() {
   // 5. Normal Appointment Booking & Lifecycle (Capability 6, 10, 13, 14, 15)
   console.log('\n▶ STEP 5: APPOINTMENT BOOKING & LIFECYCLE (Capability 6, 10, 15)');
   // Doctor 1 is available on Sunday (08:00 - 20:00). Pick a future Sunday.
-  const sundays = ['2026-10-04', '2026-10-11', '2026-10-18', '2026-10-25'];
+  const sundays = ['2026-10-04', '2026-10-11', '2026-10-18', '2026-10-25', '2026-11-01', '2026-11-08'];
   const testSunday = sundays[Math.floor(Math.random() * sundays.length)];
-  const randH = 9 + Math.floor(Math.random() * 8);
-  const randM = (Math.floor(Math.random() * 4) * 15).toString().padStart(2, '0');
-  const startT = `${String(randH).padStart(2, '0')}:${randM}:00`;
-  const endT = `${String(randH).padStart(2, '0')}:${String(Number(randM) + 15).padStart(2, '0')}:00`;
+  
+  // Find already-booked slots for Doctor 1 on testSunday to avoid double-booking collision
+  const existingApptsRes = await api('/api/v1/appointments/doctor/1');
+  const bookedSlots = new Set();
+  if (existingApptsRes.ok && Array.isArray(existingApptsRes.data?.data)) {
+    existingApptsRes.data.data
+      .filter(a => a.appointmentDate === testSunday && a.status !== 'CANCELLED')
+      .forEach(a => bookedSlots.add(a.startTime));
+  }
+
+  let startT = null;
+  let endT = null;
+  for (let h = 9; h <= 18; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const candidateStart = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+      if (!bookedSlots.has(candidateStart)) {
+        startT = candidateStart;
+        endT = `${String(h).padStart(2, '0')}:${String(m + 15).padStart(2, '0')}:00`;
+        break;
+      }
+    }
+    if (startT) break;
+  }
 
   const apptRes = await api('/api/v1/appointments', 'POST', {
     patientId: patient.id,

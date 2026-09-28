@@ -12,6 +12,10 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/nursing/tasks")
 public class CareTaskController {
@@ -22,21 +26,29 @@ public class CareTaskController {
     private PatientAssignmentService assignmentService;
 
     @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('NURSE', 'SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<List<CareTask>> getMyTasks(
+            Authentication authentication,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-Hospital-Id", required = false) Long hospitalId) {
-        if (userId == null || hospitalId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        return ResponseEntity.ok(taskService.findMyTasks(userId, hospitalId));
+        String authUserId = authentication != null ? authentication.getName() : userId;
+        Long authHospitalId = resolveHospitalId(authentication, hospitalId);
+        if (authUserId == null || authHospitalId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(taskService.findMyTasks(authUserId, authHospitalId));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('NURSE', 'SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<CareTask> createTask(
+            Authentication authentication,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-Hospital-Id", required = false) Long hospitalId,
             @Valid @RequestBody CareTaskDto dto) {
-        if (userId == null || hospitalId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        String authUserId = authentication != null ? authentication.getName() : userId;
+        Long authHospitalId = resolveHospitalId(authentication, hospitalId);
+        if (authUserId == null || authHospitalId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         
-        if (!assignmentService.isPatientAssignedToNurse(dto.getPatientId(), userId, hospitalId)) {
+        if (!assignmentService.isPatientAssignedToNurse(dto.getPatientId(), authUserId, authHospitalId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -57,14 +69,22 @@ public class CareTaskController {
     }
 
     @PatchMapping("/{id}/start")
+    @PreAuthorize("hasAnyRole('NURSE', 'SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<CareTask> startTask(
             @PathVariable Long id,
+            Authentication authentication,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-Hospital-Id", required = false) Long hospitalId) {
         
+        String authUserId = authentication != null ? authentication.getName() : userId;
+        Long authHospitalId = resolveHospitalId(authentication, hospitalId);
+
         CareTask task = taskService.findById(id);
         if (task == null) return ResponseEntity.notFound().build();
-        if (!task.getHospitalId().equals(hospitalId) || !userId.equals(task.getAssignedNurseUserId())) {
+        if (authHospitalId != null && !task.getHospitalId().equals(authHospitalId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (authUserId != null && !authUserId.equals(task.getAssignedNurseUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
@@ -73,19 +93,40 @@ public class CareTaskController {
     }
 
     @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('NURSE', 'SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<CareTask> completeTask(
             @PathVariable Long id,
+            Authentication authentication,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-Hospital-Id", required = false) Long hospitalId) {
         
+        String authUserId = authentication != null ? authentication.getName() : userId;
+        Long authHospitalId = resolveHospitalId(authentication, hospitalId);
+
         CareTask task = taskService.findById(id);
         if (task == null) return ResponseEntity.notFound().build();
-        if (!task.getHospitalId().equals(hospitalId) || !userId.equals(task.getAssignedNurseUserId())) {
+        if (authHospitalId != null && !task.getHospitalId().equals(authHospitalId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (authUserId != null && !authUserId.equals(task.getAssignedNurseUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
         task.setStatus("COMPLETED");
         task.setCompletedAt(LocalDateTime.now());
         return ResponseEntity.ok(taskService.save(task));
+    }
+
+    private Long resolveHospitalId(Authentication authentication, Long headerHospitalId) {
+        if (headerHospitalId != null) return headerHospitalId;
+        if (authentication != null && authentication.getDetails() instanceof Map) {
+            Object hid = ((Map<?, ?>) authentication.getDetails()).get("hospitalId");
+            if (hid != null) {
+                try {
+                    return Long.valueOf(hid.toString());
+                } catch (Exception ignored) {}
+            }
+        }
+        return null;
     }
 }

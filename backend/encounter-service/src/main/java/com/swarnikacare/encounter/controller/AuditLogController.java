@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -28,21 +29,21 @@ public class AuditLogController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','DOCTOR','NURSE','RECEPTIONIST')")
     public ResponseEntity<Map<String, Object>> logAction(
             @Valid @RequestBody AuditLogRequest request,
             Authentication authentication) {
         AuditLog log = new AuditLog();
         log.setHospitalId(request.getHospitalId());
         
-        String actor = (request.getActorUserId() != null && !request.getActorUserId().isEmpty())
-                ? request.getActorUserId()
-                : (authentication != null && authentication.getName() != null ? authentication.getName() : "RECEPTIONIST");
+        String actor = (authentication != null && authentication.getName() != null)
+                ? authentication.getName()
+                : ((request.getActorUserId() != null && !request.getActorUserId().isEmpty()) ? request.getActorUserId() : "SYSTEM");
         log.setActorUserId(actor);
 
-        String role = (request.getActorRole() != null && !request.getActorRole().isEmpty())
-                ? request.getActorRole()
-                : (authentication != null && !authentication.getAuthorities().isEmpty()
-                    ? authentication.getAuthorities().iterator().next().getAuthority() : "RECEPTIONIST");
+        String role = (authentication != null && !authentication.getAuthorities().isEmpty())
+                ? authentication.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "")
+                : ((request.getActorRole() != null && !request.getActorRole().isEmpty()) ? request.getActorRole() : "STAFF");
         log.setActorRole(role);
 
         log.setAction(request.getAction());
@@ -61,6 +62,7 @@ public class AuditLogController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST')")
     public ResponseEntity<Map<String, Object>> getLogs(
             @RequestParam Long hospitalId,
             @RequestParam(required = false) String entityType,

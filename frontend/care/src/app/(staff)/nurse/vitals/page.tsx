@@ -27,7 +27,7 @@ export default function NurseVitals() {
     setSuccess(false);
 
     try {
-      const res = await fetch(`/api/proxy/nursing/patients/${formData.patientId}/vitals`, {
+      const res = await fetch(`/api/proxy/api/v1/nursing/patients/${formData.patientId}/vitals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

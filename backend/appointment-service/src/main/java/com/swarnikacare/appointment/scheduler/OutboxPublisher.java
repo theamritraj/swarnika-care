@@ -30,6 +30,14 @@ public class OutboxPublisher {
 
     @Scheduled(fixedDelay = 5000)
     public void processOutboxEvents() {
+        // Recover stale PROCESSING events (stuck for more than 5 minutes)
+        List<OutboxEvent> staleEvents = outboxEventRepository.findByStatusAndNextAttemptAtLessThanEqual("PROCESSING", LocalDateTime.now().minusMinutes(5));
+        for (OutboxEvent stale : staleEvents) {
+            log.info("Recovering stale event: {}", stale.getEventId());
+            stale.setStatus("PENDING");
+            outboxEventRepository.save(stale);
+        }
+
         List<OutboxEvent> pendingEvents = outboxEventRepository.findByStatusAndNextAttemptAtLessThanEqual("PENDING", LocalDateTime.now());
 
         if (pendingEvents.isEmpty()) {
@@ -40,6 +48,9 @@ public class OutboxPublisher {
 
         for (OutboxEvent event : pendingEvents) {
             try {
+                event.setStatus("PROCESSING");
+                outboxEventRepository.save(event);
+                
                 // Send raw JSON string or rely on Kafka template to send string
                 kafkaTemplate.send(event.getTopic(), event.getAggregateId(), event.getPayload()).get(); // Synchronous send to ensure it works before updating DB
                 
@@ -57,7 +68,14 @@ public class OutboxPublisher {
                 
                 if (retryCount >= 5) { // Max retries
                     event.setStatus("FAILED");
+                    try {
+                        kafkaTemplate.send(event.getTopic() + ".dlq", event.getAggregateId(), event.getPayload()).get();
+                        log.info("Sent failed event to DLQ: {}", event.getEventId());
+                    } catch (Exception dlqEx) {
+                        log.error("Failed to send to DLQ for eventId: {}", event.getEventId(), dlqEx);
+                    }
                 } else {
+                    event.setStatus("PENDING");
                     event.setNextAttemptAt(LocalDateTime.now().plusSeconds((long) Math.pow(2, retryCount) * 10)); // Exponential backoff
                 }
                 

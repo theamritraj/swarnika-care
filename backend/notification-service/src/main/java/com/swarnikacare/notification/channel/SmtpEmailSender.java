@@ -20,6 +20,9 @@ public class SmtpEmailSender implements EmailSender {
         this.mailSender = mailSender;
     }
 
+    @Value("${app.mail.enabled:true}")
+    private boolean mailEnabled;
+
     @Override
     public void sendEmail(String to, String subject, String content) {
         log.info("Sending email to {} via SMTP", to);
@@ -29,7 +32,10 @@ public class SmtpEmailSender implements EmailSender {
         message.setSubject(subject);
         message.setText(content);
         
-        // Disable actual send in local dev if configured, but let's assume it attempts for now.
-        mailSender.send(message);
+        if (mailEnabled) {
+            mailSender.send(message);
+        } else {
+            log.info("Mail sending disabled by app.mail.enabled=false. Pretending success.");
+        }
     }
 }

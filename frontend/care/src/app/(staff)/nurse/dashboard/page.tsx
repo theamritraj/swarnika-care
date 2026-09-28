@@ -10,7 +10,7 @@ export default function NurseDashboard() {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await fetch('/api/proxy/nursing/patients/my-patients', {
+        const res = await fetch('/api/proxy/api/v1/nursing/patients/my-patients', {
           // Headers handled by Next.js BFF and API Gateway
         });
         if (res.ok) {

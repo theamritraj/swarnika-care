@@ -38,27 +38,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-                if (!securityEnabled) {
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_HOSPITAL_ADMIN"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_DOCTOR"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_PATIENT"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTIONIST"));
-            
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    "mock-admin", null, authorities
-            );
-            java.util.Map<String, Object> details = new java.util.HashMap<>();
-            details.put("userId", "mock-admin");
-            details.put("hospitalId", 1L);
-            authToken.setDetails(details);
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -98,11 +77,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         username, null, authorities
                 );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                java.util.Map<String, Object> details = new java.util.HashMap<>();
+                Object hospitalIdClaim = claims.get("hospitalId");
+                if (hospitalIdClaim != null) {
+                    details.put("hospitalId", hospitalIdClaim);
+                }
+                details.put("userId", username);
+                authToken.setDetails(details);
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Could not set user authentication in security context: " + ex.getMessage());
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired JWT token");
+            return;
         }
 
         filterChain.doFilter(request, response);

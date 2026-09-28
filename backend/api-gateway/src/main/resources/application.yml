@@ -52,6 +52,10 @@ spring:
           uri: lb://billing-service
           predicates:
             - Path=/api/v1/billing, /api/v1/billing/**
+        - id: nursing-service
+          uri: lb://nursing-service
+          predicates:
+            - Path=/api/v1/nursing, /api/v1/nursing/**
         - id: document-redeem
           uri: lb://patient-service
           predicates:

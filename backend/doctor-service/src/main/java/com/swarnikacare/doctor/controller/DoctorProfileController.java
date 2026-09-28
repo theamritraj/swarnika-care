@@ -5,6 +5,7 @@ import com.swarnikacare.doctor.dto.DoctorProfileResponse;
 import com.swarnikacare.doctor.entity.PublicProfileStatus;
 import com.swarnikacare.doctor.service.DoctorProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,12 +22,14 @@ public class DoctorProfileController {
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getProfile(@PathVariable Long doctorId) {
         DoctorProfileResponse profile = profileService.getProfileByDoctorId(doctorId);
         return ResponseEntity.ok(createSuccessResponse("Profile retrieved successfully", profile));
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR')")
     public ResponseEntity<Map<String, Object>> upsertProfile(
             @PathVariable Long doctorId,
             @RequestBody DoctorProfileRequest request) {
@@ -35,6 +38,7 @@ public class DoctorProfileController {
     }
 
     @PatchMapping("/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<Map<String, Object>> updateStatus(
             @PathVariable Long doctorId,
             @RequestParam PublicProfileStatus status) {

@@ -10,6 +10,9 @@ public class MedicationAdministrationDto {
     @NotNull private String status; // ADMINISTERED, HELD, MISSED, REFUSED
     private String reason;
     private LocalDateTime administeredAt;
+    private String doseAdministered;
+    private String route;
+    private String notes;
 
     public Long getPatientId() { return patientId; }
     public void setPatientId(Long patientId) { this.patientId = patientId; }
@@ -23,4 +26,10 @@ public class MedicationAdministrationDto {
     public void setReason(String reason) { this.reason = reason; }
     public LocalDateTime getAdministeredAt() { return administeredAt; }
     public void setAdministeredAt(LocalDateTime administeredAt) { this.administeredAt = administeredAt; }
+    public String getDoseAdministered() { return doseAdministered; }
+    public void setDoseAdministered(String doseAdministered) { this.doseAdministered = doseAdministered; }
+    public String getRoute() { return route; }
+    public void setRoute(String route) { this.route = route; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

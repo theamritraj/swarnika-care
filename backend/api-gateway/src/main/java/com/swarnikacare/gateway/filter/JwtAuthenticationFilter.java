@@ -59,15 +59,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     headers.remove("X-Permissions");
                     headers.remove("X-Hospital-Id");
                 });
-        
-                if (!securityEnabled) {
-            ServerHttpRequest.Builder reqBuilder = request.mutate()
-                    .header("X-User-Id", "mock-admin")
-                    .header("X-Role", "SUPER_ADMIN,HOSPITAL_ADMIN,DOCTOR,PATIENT,RECEPTIONIST")
-                    .header("X-Hospital-Id", "1");
-            return chain.filter(exchange.mutate().request(reqBuilder.build()).build());
-        }
-
         if (isSecured(request)) {
             if (!request.getHeaders().containsKey("Authorization")) {
                 return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);

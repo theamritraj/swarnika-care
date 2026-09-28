@@ -6,6 +6,7 @@ import com.swarnikacare.patient.service.PatientRelationshipService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class PatientRelationshipController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> addRelationship(
             @PathVariable Long patientId,
             @Valid @RequestBody PatientRelationshipRequest request) {
@@ -31,12 +33,14 @@ public class PatientRelationshipController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR','PATIENT') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> getRelationships(@PathVariable Long patientId) {
         List<PatientRelationshipResponse> relationships = relationshipService.getRelationshipsForPatient(patientId);
         return ResponseEntity.ok(createSuccessResponse("Relationships retrieved successfully", relationships));
     }
 
     @DeleteMapping("/{relationshipId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> deleteRelationship(
             @PathVariable Long patientId,
             @PathVariable Long relationshipId) {

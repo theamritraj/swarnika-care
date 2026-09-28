@@ -46,6 +46,7 @@ public class DoctorController {
     // --- Doctor Endpoints ---
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getAllDoctors() {
         List<DoctorResponse> doctors = doctorService.getAllDoctors();
         return ResponseEntity.ok(createSuccessResponse("Doctors retrieved successfully", doctors));
@@ -69,6 +70,7 @@ public class DoctorController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getDoctorById(@PathVariable Long id) {
         DoctorResponse doctor = doctorService.getDoctorById(id);
         return ResponseEntity.ok(createSuccessResponse("Doctor retrieved successfully", doctor));
@@ -91,6 +93,7 @@ public class DoctorController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Map<String, Object>> getMyProfile(Authentication authentication) {
         String userId = authentication.getName();
         DoctorResponse doctor = doctorService.getDoctorByUserId(userId);
@@ -119,6 +122,7 @@ public class DoctorController {
     }
 
     @GetMapping("/{id}/availability")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getAvailability(@PathVariable Long id) {
         List<DoctorAvailabilityResponse> availability = availabilityService.getAvailabilityByDoctor(id);
         return ResponseEntity.ok(createSuccessResponse("Availability retrieved successfully", availability));

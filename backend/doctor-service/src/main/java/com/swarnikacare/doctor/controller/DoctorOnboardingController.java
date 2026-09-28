@@ -7,6 +7,7 @@ import com.swarnikacare.doctor.service.DoctorOnboardingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class DoctorOnboardingController {
     }
 
     @PostMapping("/initiate")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<Map<String, Object>> initiateOnboarding(@Valid @RequestBody DoctorOnboardingInitiateRequest request) {
         String message = doctorOnboardingService.initiateOnboarding(request);
         Map<String, Object> resp = new HashMap<>();
@@ -32,6 +34,7 @@ public class DoctorOnboardingController {
     }
 
     @PostMapping("/complete")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> completeOnboarding(@Valid @RequestBody DoctorOnboardingCompleteRequest request) {
         DoctorOnboardingResponse response = doctorOnboardingService.completeOnboarding(request);
         Map<String, Object> resp = new HashMap<>();
@@ -42,6 +45,7 @@ public class DoctorOnboardingController {
     }
 
     @PostMapping("/resend")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> resendOtp(
             @RequestBody(required = false) Map<String, String> body,
             @RequestParam(required = false) String email) {

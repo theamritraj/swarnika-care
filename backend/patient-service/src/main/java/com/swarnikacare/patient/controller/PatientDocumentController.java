@@ -7,6 +7,7 @@ import com.swarnikacare.patient.entity.PatientDocument;
 import com.swarnikacare.patient.entity.PatientDocumentStatus;
 import com.swarnikacare.patient.exception.PatientNotFoundException;
 import com.swarnikacare.patient.repository.PatientDocumentRepository;
+import com.swarnikacare.patient.repository.PatientHospitalRegistrationRepository;
 import com.swarnikacare.patient.repository.PatientRepository;
 import com.swarnikacare.patient.service.DocumentAccessService;
 import com.swarnikacare.patient.service.PatientDocumentService;
@@ -30,16 +31,19 @@ public class PatientDocumentController {
     private final PatientDocumentService documentService;
     private final PatientDocumentRepository documentRepository;
     private final PatientRepository patientRepository;
+    private final PatientHospitalRegistrationRepository registrationRepository;
     private final DocumentAccessService accessService;
 
     public PatientDocumentController(
             PatientDocumentService documentService,
             PatientDocumentRepository documentRepository,
             PatientRepository patientRepository,
+            PatientHospitalRegistrationRepository registrationRepository,
             DocumentAccessService accessService) {
         this.documentService = documentService;
         this.documentRepository = documentRepository;
         this.patientRepository = patientRepository;
+        this.registrationRepository = registrationRepository;
         this.accessService = accessService;
     }
 
@@ -49,7 +53,7 @@ public class PatientDocumentController {
      * Staff: upload a document for a patient (identified by {patientId}).
      */
     @PostMapping("/api/v1/patients/{patientId}/documents")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> addDocument(
             @PathVariable Long patientId,
             @Valid @RequestBody PatientDocumentRequest request) {
@@ -61,7 +65,7 @@ public class PatientDocumentController {
      * Staff: list all documents for a patient (full response including fileUrl).
      */
     @GetMapping("/api/v1/patients/{patientId}/documents")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> getDocuments(@PathVariable Long patientId) {
         List<PatientDocumentResponse> docs = documentService.getDocumentsByPatient(patientId);
         return ResponseEntity.ok(ok("Documents retrieved successfully", docs));
@@ -71,7 +75,7 @@ public class PatientDocumentController {
      * Staff: verify a document.
      */
     @PatchMapping("/api/v1/patients/{patientId}/documents/{documentId}/verify")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #patientId))")
     public ResponseEntity<Map<String, Object>> verifyDocument(
             @PathVariable Long patientId,
             @PathVariable Long documentId,
@@ -129,6 +133,11 @@ public class PatientDocumentController {
             throw new AccessDeniedException("Access denied: document does not belong to this patient");
         }
 
+        // Cross-hospital scoping check — server-side
+        if (!registrationRepository.existsByPatientIdAndHospitalId(patientId, doc.getHospitalId())) {
+            throw new AccessDeniedException("Access denied: cross-hospital document access blocked");
+        }
+
         // Only allow access to verified documents
         if (doc.getStatus() == PatientDocumentStatus.REJECTED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -169,6 +178,10 @@ public class PatientDocumentController {
         PatientDocument doc = documentRepository.findById(claims.documentId())
                 .orElse(null);
         if (doc == null || !doc.getPatientId().equals(claims.patientId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        if (!registrationRepository.existsByPatientIdAndHospitalId(claims.patientId(), doc.getHospitalId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

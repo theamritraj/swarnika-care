@@ -7,11 +7,16 @@ import com.swarnikacare.iam.dto.PatientRegistrationRequest;
 import com.swarnikacare.iam.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Public authentication endpoints for user login, OTP generation, and patient self-registration.
+ * Explicitly public.
+ */
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -23,18 +28,21 @@ public class AuthController {
     }
 
     @PostMapping("/register/patient")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> registerPatient(@Valid @RequestBody PatientRegistrationRequest request) {
         authService.registerPatient(request);
         return ResponseEntity.ok(createSuccessResponse("If email is valid, an OTP has been sent for registration"));
     }
 
     @PostMapping("/request-otp")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> requestOtp(@Valid @RequestBody OtpRequest request) {
         authService.requestOtp(request);
         return ResponseEntity.ok(createSuccessResponse("If account exists, an OTP has been sent"));
     }
 
     @PostMapping("/verify-otp")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
         AuthResponse response = authService.verifyOtp(request);
         Map<String, Object> data = new HashMap<>();

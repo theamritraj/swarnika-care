@@ -6,6 +6,7 @@ import com.swarnikacare.organization.service.DepartmentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,30 +24,35 @@ public class DepartmentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<Map<String, Object>> createDepartment(@Valid @RequestBody DepartmentCreateRequest request) {
         Department department = departmentService.createDepartment(request);
         return new ResponseEntity<>(createSuccessResponse("Department created successfully", department), HttpStatus.CREATED);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST')")
     public ResponseEntity<Map<String, Object>> getAllDepartments() {
         List<Department> departments = departmentService.getAllDepartments();
         return ResponseEntity.ok(createSuccessResponse("Departments retrieved successfully", departments));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'PATIENT')")
     public ResponseEntity<Map<String, Object>> getDepartmentById(@PathVariable Long id) {
         Department department = departmentService.getDepartmentById(id);
         return ResponseEntity.ok(createSuccessResponse("Department retrieved successfully", department));
     }
 
     @GetMapping("/hospital/{hospitalId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'PATIENT')")
     public ResponseEntity<Map<String, Object>> getDepartmentsByHospital(@PathVariable Long hospitalId) {
         List<Department> departments = departmentService.getDepartmentsByHospital(hospitalId);
         return ResponseEntity.ok(createSuccessResponse("Departments retrieved successfully", departments));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<Map<String, Object>> updateDepartment(@PathVariable Long id, @RequestBody DepartmentCreateRequest request) {
         Department department = departmentService.updateDepartment(id, request);
         return ResponseEntity.ok(createSuccessResponse("Department updated successfully", department));

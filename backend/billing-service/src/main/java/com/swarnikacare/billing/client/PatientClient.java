@@ -6,5 +6,5 @@ import java.util.Map;
 @FeignClient(name = "patient-service", path = "/api/v1/patients")
 public interface PatientClient {
     @GetMapping("/me")
-    Map<String, Object> getPatientMe(@RequestHeader("X-User-Id") String userId);
+    Map<String, Object> getPatientMe(@RequestHeader("Authorization") String token, @RequestHeader("X-User-Id") String userId);
 }

@@ -9,6 +9,10 @@ public class ShiftHandoverDto {
     @NotNull private String incomingNurseUserId;
     @NotNull private String summary;
     private String pendingTasks;
+    private String importantObservations;
+    private String pendingInvestigations;
+    private String pendingMedicationActions;
+    private Long rosterId;
 
     public Long getPatientId() { return patientId; }
     public void setPatientId(Long patientId) { this.patientId = patientId; }
@@ -22,4 +26,12 @@ public class ShiftHandoverDto {
     public void setSummary(String summary) { this.summary = summary; }
     public String getPendingTasks() { return pendingTasks; }
     public void setPendingTasks(String pendingTasks) { this.pendingTasks = pendingTasks; }
+    public String getImportantObservations() { return importantObservations; }
+    public void setImportantObservations(String importantObservations) { this.importantObservations = importantObservations; }
+    public String getPendingInvestigations() { return pendingInvestigations; }
+    public void setPendingInvestigations(String pendingInvestigations) { this.pendingInvestigations = pendingInvestigations; }
+    public String getPendingMedicationActions() { return pendingMedicationActions; }
+    public void setPendingMedicationActions(String pendingMedicationActions) { this.pendingMedicationActions = pendingMedicationActions; }
+    public Long getRosterId() { return rosterId; }
+    public void setRosterId(Long rosterId) { this.rosterId = rosterId; }
 }

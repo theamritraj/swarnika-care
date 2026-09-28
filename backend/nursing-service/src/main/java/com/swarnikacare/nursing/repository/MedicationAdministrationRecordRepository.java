@@ -4,6 +4,9 @@ import com.swarnikacare.nursing.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface MedicationAdministrationRecordRepository extends JpaRepository<MedicationAdministrationRecord, Long> {
+    List<MedicationAdministrationRecord> findByPatientIdAndHospitalId(Long patientId, Long hospitalId);
 }

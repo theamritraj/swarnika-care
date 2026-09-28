@@ -48,6 +48,7 @@ public class EmailService {
             log.info("✅ Appointment confirmation email sent to {}", toEmail);
         } catch (Exception e) {
             log.error("❌ Failed to send appointment confirmation email to {}", toEmail, e);
+            throw new RuntimeException("Failed to send appointment confirmation email", e);
         }
     }
 

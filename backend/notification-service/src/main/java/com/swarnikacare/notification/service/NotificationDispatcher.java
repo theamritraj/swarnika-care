@@ -29,14 +29,15 @@ public class NotificationDispatcher {
                     repository.save(notification);
                     
                     channel.send(notification);
+                    repository.save(notification);
                     log.info("Successfully dispatched notification {} via {}", notification.getId(), notification.getChannel());
                 } catch (Exception e) {
                     log.error("Failed to dispatch notification {} via {}", notification.getId(), notification.getChannel(), e);
                     notification.setDeliveryStatus("FAILED");
                     notification.setFailureReason(e.getMessage());
                     notification.setRetryCount(notification.getRetryCount() + 1);
-                } finally {
                     repository.save(notification);
+                    throw new RuntimeException("Failed to dispatch notification: " + e.getMessage(), e);
                 }
                 return;
             }

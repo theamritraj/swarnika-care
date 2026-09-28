@@ -6,6 +6,7 @@ import com.swarnikacare.encounter.service.EncounterService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class OpdController {
     }
 
     @PostMapping("/encounters")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST','DOCTOR','NURSE')")
     public ResponseEntity<Map<String, Object>> createOpdEncounter(@Valid @RequestBody OpdEncounterRequest request) {
         EncounterResponse response = encounterService.createOpdEncounter(request);
         return new ResponseEntity<>(createSuccessResponse("OPD encounter created successfully", response), HttpStatus.CREATED);

@@ -39,27 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-                if (!securityEnabled) {
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_HOSPITAL_ADMIN"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_DOCTOR"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_PATIENT"));
-            authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTIONIST"));
-            
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    "mock-admin", null, authorities
-            );
-            java.util.Map<String, Object> details = new java.util.HashMap<>();
-            details.put("userId", "mock-admin");
-            details.put("hospitalId", 1L);
-            authToken.setDetails(details);
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
@@ -92,9 +71,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (ExpiredJwtException ex) {
-            logger.warn("Expired JWT token");
+            logger.warn("Expired JWT token: " + ex.getMessage());
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Expired JWT token");
+            return;
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Could not set user authentication in security context: " + ex.getMessage());
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+            return;
         }
 
         filterChain.doFilter(request, response);

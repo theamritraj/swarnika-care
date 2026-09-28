@@ -107,7 +107,10 @@ public class PatientBillingController {
     private Long resolvePatientId(Authentication auth) {
         if (auth == null) throw new org.springframework.security.access.AccessDeniedException("Unauthorized");
         try {
-            Map<String, Object> resp = patientClient.getPatientMe(auth.getName());
+            org.springframework.web.context.request.ServletRequestAttributes attrs = 
+                (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            String token = attrs.getRequest().getHeader("Authorization");
+            Map<String, Object> resp = patientClient.getPatientMe(token, auth.getName());
             Object data = resp.get("data");
             if (data instanceof Map) {
                 Object id = ((Map<String, Object>) data).get("id");

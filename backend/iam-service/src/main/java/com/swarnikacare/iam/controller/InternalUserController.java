@@ -9,11 +9,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Internal service-to-service controller.
+ * Authentication & authorization are enforced by InternalApiFilter via X-Internal-Secret header.
+ * Not exposed through API Gateway.
+ */
 @RestController
 @RequestMapping("/api/v1/internal/users")
+@PreAuthorize("permitAll()")
 public class InternalUserController {
 
     private final UserService userService;

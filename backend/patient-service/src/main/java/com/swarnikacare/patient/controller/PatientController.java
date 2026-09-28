@@ -45,7 +45,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR') and @scopeValidator.canAccessPatient(authentication, #id))")
     public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
         PatientResponse patient = patientService.getPatientById(id);
         return ResponseEntity.ok(createSuccessResponse("Patient retrieved successfully", patient));
@@ -56,7 +56,7 @@ public class PatientController {
      * Patients must use PATCH /me to update their own allowed fields.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HOSPITAL_ADMIN','RECEPTIONIST')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST') and @scopeValidator.canAccessPatient(authentication, #id))")
     public ResponseEntity<Map<String, Object>> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody PatientUpdateRequest request) {
@@ -78,6 +78,7 @@ public class PatientController {
      * Identity is derived from the authenticated JWT — never trusted from request.
      */
     @GetMapping("/me")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<Map<String, Object>> getMyProfile(Authentication authentication) {
         String userId = authentication.getName();
         PatientResponse patient = patientService.getPatientByUserId(userId);
@@ -90,6 +91,7 @@ public class PatientController {
      * Cannot update: MRN, ID, userId, clinical fields, status.
      */
     @PatchMapping("/me")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<Map<String, Object>> updateMyProfile(
             Authentication authentication,
             @RequestBody PatientSelfUpdateRequest request) {
