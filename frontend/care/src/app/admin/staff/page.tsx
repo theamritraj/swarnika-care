@@ -117,6 +117,7 @@ function StaffContent() {
   const [activeStaff, setActiveStaff] = useState<StaffMember | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Form State: Onboard
   const [onboardForm, setOnboardForm] = useState({
@@ -257,6 +258,7 @@ function StaffContent() {
       notes: '',
     });
     setError(null);
+    setShowAdvanced(false);
     setActiveModal('onboard');
   };
 
@@ -960,34 +962,27 @@ function StaffContent() {
                   </select>
                 </div>
 
-                {/* Employee Code */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                {/* Employee Code (Auto-generated badge) */}
+                <div className="space-y-1 sm:col-span-2 bg-muted/30 p-3 rounded-lg border border-border/50 flex items-center justify-between">
+                  <div>
                     <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                      <Award className="w-3.5 h-3.5 text-[#007b92]" /> Employee Code *
+                      <Award className="w-3.5 h-3.5 text-[#007b92]" /> Employee Code (Auto-generated)
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => handleAutoGenerateCode(onboardForm.role)}
-                      className="text-[10px] text-[#007b92] hover:underline"
-                    >
-                      Generate code
-                    </button>
+                    <p className="text-sm font-mono font-medium text-foreground mt-1">{onboardForm.employeeCode}</p>
                   </div>
-                  <input
-                    type="text"
-                    required
-                    value={onboardForm.employeeCode}
-                    onChange={(e) => setOnboardForm({ ...onboardForm, employeeCode: e.target.value.toUpperCase() })}
-                    placeholder="e.g. STF-NUR-1001"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92] font-mono"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAutoGenerateCode(onboardForm.role)}
+                    className="text-xs text-[#007b92] hover:underline px-3 py-1.5 bg-[#007b92]/10 rounded-md"
+                  >
+                    Regenerate
+                  </button>
                 </div>
 
                 {/* Hospital Selection */}
-                <div className="space-y-1">
+                <div className="space-y-1 sm:col-span-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <Building2 className="w-3.5 h-3.5 text-[#007b92]" /> Hospital *
+                    <Building2 className="w-3.5 h-3.5 text-[#007b92]" /> Primary Hospital Branch *
                   </label>
                   <select
                     required
@@ -1002,67 +997,86 @@ function StaffContent() {
                   </select>
                 </div>
 
-                {/* Department Selection */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <Layers className="w-3.5 h-3.5 text-[#007b92]" /> Department
-                  </label>
-                  <select
-                    value={onboardForm.departmentId}
-                    onChange={(e) => setOnboardForm({ ...onboardForm, departmentId: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
-                    disabled={!onboardForm.hospitalId}
-                  >
-                    <option value="">Select Department...</option>
-                    {availableDepartmentsForOnboard.map(d => (
-                      <option key={d.id} value={d.id.toString()}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Designation Selection */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-[#007b92]" /> Designation
-                  </label>
-                  <select
-                    value={onboardForm.designationId}
-                    onChange={(e) => setOnboardForm({ ...onboardForm, designationId: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
-                  >
-                    <option value="">Select Designation...</option>
-                    {availableDesignationsForOnboard.map(des => (
-                      <option key={des.id} value={des.id.toString()}>{des.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Employment Type */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground">Employment Type</label>
-                  <select
-                    value={onboardForm.employmentType}
-                    onChange={(e) => setOnboardForm({ ...onboardForm, employmentType: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
-                  >
-                    {EMPLOYMENT_TYPES.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Joining Date */}
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-[#007b92]" /> Joining Date
-                  </label>
-                  <input
-                    type="date"
-                    value={onboardForm.joiningDate}
-                    onChange={(e) => setOnboardForm({ ...onboardForm, joiningDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
                   />
                 </div>
+
+                {/* Advanced Toggle */}
+                <div className="sm:col-span-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="text-xs font-medium text-[#007b92] hover:underline flex items-center gap-1"
+                  >
+                    {showAdvanced ? 'Hide Advanced Details' : 'Show Advanced Details (Optional)'}
+                  </button>
+                </div>
+
+                {/* Advanced Fields */}
+                {showAdvanced && (
+                  <>
+                    {/* Department Selection */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Layers className="w-3.5 h-3.5 text-[#007b92]" /> Department
+                      </label>
+                      <select
+                        value={onboardForm.departmentId}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, departmentId: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
+                        disabled={!onboardForm.hospitalId}
+                      >
+                        <option value="">Select Department...</option>
+                        {availableDepartmentsForOnboard.map(d => (
+                          <option key={d.id} value={d.id.toString()}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Designation Selection */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Briefcase className="w-3.5 h-3.5 text-[#007b92]" /> Designation
+                      </label>
+                      <select
+                        value={onboardForm.designationId}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, designationId: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
+                      >
+                        <option value="">Select Designation...</option>
+                        {availableDesignationsForOnboard.map(des => (
+                          <option key={des.id} value={des.id.toString()}>{des.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Employment Type */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Employment Type</label>
+                      <select
+                        value={onboardForm.employmentType}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, employmentType: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
+                      >
+                        {EMPLOYMENT_TYPES.map(t => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Joining Date */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-[#007b92]" /> Joining Date
+                      </label>
+                      <input
+                        type="date"
+                        value={onboardForm.joiningDate}
+                        onChange={(e) => setOnboardForm({ ...onboardForm, joiningDate: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#007b92]"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="pt-4 border-t border-border flex justify-end gap-3">
