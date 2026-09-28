@@ -51,6 +51,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         if (request.getMethod() == org.springframework.http.HttpMethod.OPTIONS) {
             return chain.filter(exchange);
         }
+
+        // Capture client-provided hospital context BEFORE stripping (used as fallback for multi-hospital staff)
+        String clientHospitalId = request.getHeaders().getFirst("X-Hospital-Id");
         
         // Always strip potential spoofed headers from external requests
         ServerHttpRequest.Builder requestBuilder = request.mutate()
@@ -98,7 +101,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                         .header("X-Permissions", permissions != null ? String.join(",", permissions) : "");
 
                 if (hospitalClaim != null) {
+                    // JWT-embedded hospitalId takes precedence (single-hospital staff / patients)
                     requestBuilder.header("X-Hospital-Id", hospitalClaim.toString());
+                } else if (clientHospitalId != null && !clientHospitalId.isBlank()) {
+                    // Multi-hospital staff (nurses, doctors, billing) send hospital context via header.
+                    // Safe to forward since the user is already JWT-authenticated above.
+                    requestBuilder.header("X-Hospital-Id", clientHospitalId);
                 }
 
             } catch (Exception e) {

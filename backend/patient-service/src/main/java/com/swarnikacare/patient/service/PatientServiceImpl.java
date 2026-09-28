@@ -82,12 +82,17 @@ public class PatientServiceImpl implements PatientService {
         // Generate unique MRN
         patient.setMrn(generateUniqueMrn());
 
-        // Resolve userId from security context if available, otherwise generate
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getName() != null && !auth.getName().equalsIgnoreCase("anonymousUser")) {
-            patient.setUserId(auth.getName());
+        // Resolve userId: prefer explicitly provided IAM userId (patient pre-registered in IAM),
+        // fall back to security context (staff creating record), then generate a placeholder.
+        if (request.getIamUserId() != null && !request.getIamUserId().isBlank()) {
+            patient.setUserId(request.getIamUserId());
         } else {
-            patient.setUserId("usr-" + UUID.randomUUID().toString().substring(0, 8));
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName() != null && !auth.getName().equalsIgnoreCase("anonymousUser")) {
+                patient.setUserId(auth.getName());
+            } else {
+                patient.setUserId("usr-" + UUID.randomUUID().toString().substring(0, 8));
+            }
         }
         
         Patient savedPatient = patientRepository.save(patient);

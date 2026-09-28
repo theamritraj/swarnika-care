@@ -43,6 +43,10 @@ public class PatientCreateRequest {
 
     private Long hospitalId; // Optional: register at hospital on creation
 
+    private String iamUserId; // Optional: link to a pre-existing IAM userId (e.g. patient self-registered first)
+    public String getIamUserId() { return iamUserId; }
+    public void setIamUserId(String iamUserId) { this.iamUserId = iamUserId; }
+
     public PatientCreateRequest(String firstName, String lastName, String email, String phone, LocalDate dateOfBirth, String bloodGroup, String emergencyContact) {
         this.firstName = firstName;
         this.lastName = lastName;
