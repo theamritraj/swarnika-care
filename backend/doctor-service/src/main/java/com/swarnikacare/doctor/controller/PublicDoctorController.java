@@ -29,8 +29,8 @@ public class PublicDoctorController {
     @GetMapping
     @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getPublishedDoctors(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Long hospitalId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String specialization) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "hospitalId", required = false) Long hospitalId,
+            @org.springframework.web.bind.annotation.RequestParam(value = "specialization", required = false) String specialization) {
         List<DoctorProfileResponse> publishedProfiles = profileService.getPublishedProfiles(hospitalId, specialization);
         
         Map<String, Object> response = new HashMap<>();
@@ -44,7 +44,7 @@ public class PublicDoctorController {
     @GetMapping("/specialities")
     @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getAvailableSpecialities(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Long hospitalId) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "hospitalId", required = false) Long hospitalId) {
         List<Map<String, Object>> specialities = profileService.getAvailableSpecialities(hospitalId);
         
         Map<String, Object> response = new HashMap<>();

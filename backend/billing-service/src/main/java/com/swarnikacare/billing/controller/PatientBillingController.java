@@ -109,6 +109,9 @@ public class PatientBillingController {
         try {
             org.springframework.web.context.request.ServletRequestAttributes attrs = 
                 (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            if (attrs == null || attrs.getRequest() == null) {
+                throw new org.springframework.security.access.AccessDeniedException("Request context unavailable");
+            }
             String token = attrs.getRequest().getHeader("Authorization");
             Map<String, Object> resp = patientClient.getPatientMe(token, auth.getName());
             Object data = resp.get("data");

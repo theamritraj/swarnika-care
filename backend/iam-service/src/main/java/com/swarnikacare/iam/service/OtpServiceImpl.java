@@ -86,7 +86,11 @@ public class OtpServiceImpl implements OtpService {
         redisTemplate.opsForValue().set(otpKey, newState, Duration.ofMinutes(expirationMinutes));
         redisTemplate.opsForValue().set(cooldownKey, "LOCKED", Duration.ofSeconds(resendCooldownSeconds));
 
-        emailSender.sendOtp(email, plainOtp, purpose.name());
+        try {
+            emailSender.sendOtp(email, plainOtp, purpose.name());
+        } catch (Exception e) {
+            log.warn("Failed to send OTP email (probably missing SMTP config). OTP generated was: {}", plainOtp);
+        }
     }
 
     @Override

@@ -63,7 +63,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     headers.remove("X-Permissions");
                     headers.remove("X-Hospital-Id");
                 });
-        if (isSecured(request)) {
+        boolean secured = isSecured(request);
+        if (secured) {
             if (!request.getHeaders().containsKey("Authorization")) {
                 return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);
             }
@@ -113,6 +114,34 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 log.error("JWT Validation failed: {}", e.getMessage());
                 return onError(exchange, "Invalid JWT Token", HttpStatus.UNAUTHORIZED);
             }
+        } else if (request.getHeaders().containsKey("Authorization")) {
+            // Optional auth for open endpoints like public appointment creation
+            final String authHeader = request.getHeaders().getOrEmpty("Authorization").get(0);
+            if (authHeader.startsWith("Bearer ")) {
+                try {
+                    String token = authHeader.substring(7);
+                    Claims claims = extractAllClaims(token);
+                    if ("swarnika-iam".equals(claims.getIssuer()) && "swarnika-care".equals(claims.getAudience())) {
+                        String userId = claims.getSubject();
+                        List<String> roles = claims.get("roles", List.class);
+                        List<String> permissions = claims.get("permissions", List.class);
+                        Object hospitalClaim = claims.get("hospitalId") != null ? claims.get("hospitalId") : claims.get("hospital_id");
+
+                        requestBuilder
+                                .header("X-User-Id", userId)
+                                .header("X-Role", roles != null ? String.join(",", roles) : "")
+                                .header("X-Permissions", permissions != null ? String.join(",", permissions) : "");
+
+                        if (hospitalClaim != null) {
+                            requestBuilder.header("X-Hospital-Id", hospitalClaim.toString());
+                        } else if (clientHospitalId != null && !clientHospitalId.isBlank()) {
+                            requestBuilder.header("X-Hospital-Id", clientHospitalId);
+                        }
+                    }
+                } catch (Exception ignored) {
+                    // Ignore invalid token for unsecured endpoints
+                }
+            }
         }
         
         return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
@@ -121,6 +150,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private boolean isSecured(ServerHttpRequest request) {
         final String path = request.getPath().toString();
         if (path.equals("/")) {
+            return false;
+        }
+        // Allow public booking without authentication
+        if (request.getMethod() == org.springframework.http.HttpMethod.POST && 
+            (path.equals("/api/v1/appointments") || path.equals("/api/v1/appointments/"))) {
             return false;
         }
         return openApiEndpoints.stream().noneMatch(path::startsWith);

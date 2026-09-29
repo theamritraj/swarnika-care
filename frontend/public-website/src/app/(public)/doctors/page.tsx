@@ -6,8 +6,15 @@ import Link from 'next/link';
 import { ThumbsUp, X, CheckCircle2, Calendar, Clock, MapPin, Loader2, AlertCircle, Search } from 'lucide-react';
 import { API, type PublicDoctor, type PublicHospital, type PublicSpeciality } from '@/lib/api';
 
-// Fallback avatar for doctors without a profile picture
-const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop';
+// Fallback avatars for doctors without a profile picture
+const FALLBACK_AVATARS = [
+  '/images/doctors/dr_priya_sharma.jpg',
+  '/images/doctors/dr_ananya_patel.jpg',
+  '/images/doctors/dr_uttpal_kant.jpg',
+  '/images/doctors/dr_vibha_singh.jpg',
+  '/images/doctors/dr_deepak_sharma.jpg',
+  '/images/doctors/dr_ruchi_verma.jpg',
+];
 
 export default function DoctorsPage() {
   // Data state
@@ -36,6 +43,14 @@ export default function DoctorsPage() {
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('10:00 AM');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmedAppointment, setConfirmedAppointment] = useState<{
+    id?: number;
+    appointmentId?: number;
+    appointmentNumber?: string;
+    doctorName?: string;
+    hospitalName?: string;
+    slot?: string;
+  } | null>(null);
 
   // Read URL params on mount for pre-filtering
   useEffect(() => {
@@ -126,7 +141,13 @@ export default function DoctorsPage() {
   });
 
   const getDoctorName = (doc: PublicDoctor) => `Dr. ${doc.firstName} ${doc.lastName}`;
-  const getDoctorImage = (doc: PublicDoctor) => doc.profilePictureUrl || FALLBACK_AVATAR;
+  const getDoctorImage = (doc: PublicDoctor) => {
+    if (doc.profilePictureUrl && doc.profilePictureUrl.trim().length > 0) {
+      return doc.profilePictureUrl;
+    }
+    const seed = (doc.doctorId || doc.id || 1);
+    return FALLBACK_AVATARS[seed % FALLBACK_AVATARS.length];
+  };
   const getDoctorSpecialty = (doc: PublicDoctor) => doc.specializations || 'General Medicine';
   const getDoctorExperience = (doc: PublicDoctor) => doc.experienceYears ? `${doc.experienceYears}+ Years Exp.` : '';
 
@@ -139,6 +160,7 @@ export default function DoctorsPage() {
     setPatientEmail('');
     setAppointmentDate('');
     setAppointmentTime('10:00 AM');
+    setConfirmedAppointment(null);
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -146,7 +168,7 @@ export default function DoctorsPage() {
     setIsSubmitting(true);
 
     try {
-      await fetch(API.APPOINTMENTS, {
+      const res = await fetch(API.APPOINTMENTS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -157,11 +179,22 @@ export default function DoctorsPage() {
           patientMobile,
           patientEmail,
         }),
-      }).catch(() => null);
+      });
 
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        alert(errJson?.message || 'Failed to book appointment. Please try again.');
+        return;
+      }
+
+      const json = await res.json().catch(() => null);
+      if (json?.data) {
+        setConfirmedAppointment(json.data);
+      }
       setIsSuccess(true);
-    } catch {
-      setIsSuccess(true);
+    } catch (err) {
+      console.error('Failed to submit appointment:', err);
+      alert('Network error while booking appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -463,19 +496,25 @@ export default function DoctorsPage() {
                 <h4 className="text-[20px] font-bold text-[#333333] mb-1">
                   Appointment Confirmed!
                 </h4>
+                {(confirmedAppointment?.appointmentId || confirmedAppointment?.id) && (
+                  <div className="inline-block bg-purple-50 text-[#622060] px-3.5 py-1 rounded-full text-[12.5px] font-bold border border-purple-200 mb-3">
+                    Appointment ID: #{confirmedAppointment?.appointmentId || confirmedAppointment?.id}
+                    {confirmedAppointment?.appointmentNumber ? ` • ${confirmedAppointment.appointmentNumber}` : ''}
+                  </div>
+                )}
                 <p className="text-[13.5px] text-gray-600 mb-4">
-                  Your appointment with <span className="font-bold text-[#622060]">{getDoctorName(selectedDoctor)}</span> has been booked for{' '}
+                  Your appointment with <span className="font-bold text-[#622060]">{confirmedAppointment?.doctorName || getDoctorName(selectedDoctor)}</span> has been booked for{' '}
                   <span className="font-bold">{appointmentDate || 'Today'}</span> at{' '}
-                  <span className="font-bold">{appointmentTime}</span>.
+                  <span className="font-bold">{confirmedAppointment?.slot || appointmentTime}</span>.
                 </p>
                 <div className="bg-[#f8f9fa] rounded-lg p-3 text-[12.5px] text-gray-600 text-left mb-5 border border-gray-200">
                   <div className="flex items-center gap-2 mb-1">
                     <MapPin className="w-4 h-4 text-[#622060]" />
-                    <span>Swarnika Hospitals</span>
+                    <span>{confirmedAppointment?.hospitalName || 'Swarnika Hospitals'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-[#622060]" />
-                    <span>Slot: {appointmentTime}</span>
+                    <span>Slot: {confirmedAppointment?.slot || appointmentTime}</span>
                   </div>
                 </div>
                 <button

@@ -53,6 +53,7 @@ otp:
   expiration-minutes: 5
   max-attempts: 3
   resend-cooldown-seconds: 60
+  dev-bypass: false
 
 bootstrap:
   admin:

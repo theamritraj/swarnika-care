@@ -10,10 +10,13 @@ public class RateLimiterConfig {
 
     @Bean
     public KeyResolver ipKeyResolver() {
-        return exchange -> Mono.just(
-                exchange.getRequest().getRemoteAddress() != null 
-                        ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress() 
-                        : "unknown-ip"
-        );
+        return exchange -> {
+            var req = exchange.getRequest();
+            var remoteAddress = req.getRemoteAddress();
+            if (remoteAddress != null && remoteAddress.getAddress() != null) {
+                return Mono.just(remoteAddress.getAddress().getHostAddress());
+            }
+            return Mono.just("unknown-ip");
+        };
     }
 }

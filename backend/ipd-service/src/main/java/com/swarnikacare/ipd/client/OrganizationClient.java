@@ -6,8 +6,8 @@ import java.util.Map;
 @FeignClient(name = "organization-service", path = "/api/v1/beds")
 public interface OrganizationClient {
     @PutMapping("/{id}/status")
-    Map<String, Object> updateBedStatus(@PathVariable Long id, @RequestBody Map<String, String> status);
+    Map<String, Object> updateBedStatus(@PathVariable("id") Long id, @RequestBody Map<String, String> status);
     
     @GetMapping("/{id}")
-    Map<String, Object> getBedById(@PathVariable Long id);
+    Map<String, Object> getBedById(@PathVariable("id") Long id);
 }

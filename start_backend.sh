@@ -1,9 +1,14 @@
 #!/bin/bash
-echo "Killing all running java processes..."
-pkill -f "java" || true
+echo "Terminating any existing backend service processes on ports 8761, 8080-8095..."
+lsof -ti :8761,8080,8081,8082,8083,8084,8085,8086,8087,8088,8089,8090,8091,8092,8093 | xargs kill -9 2>/dev/null || true
+pkill -f "spring-boot:run" 2>/dev/null || true
 sleep 2
 
 cd backend
+if [ -f .env ]; then
+  echo "Loading environment variables from .env file..."
+  export $(grep -v '^#' .env | xargs)
+fi
 
 echo "Starting Service Registry..."
 mvn spring-boot:run -f service-registry/pom.xml > registry.log 2>&1 &

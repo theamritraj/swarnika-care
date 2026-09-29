@@ -48,7 +48,7 @@ public class DoctorOnboardingController {
     @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> resendOtp(
             @RequestBody(required = false) Map<String, String> body,
-            @RequestParam(required = false) String email) {
+            @RequestParam(value = "email", required = false) String email) {
         String targetEmail = (body != null && body.containsKey("email")) ? body.get("email") : email;
         if (targetEmail == null || targetEmail.isBlank()) {
             throw new IllegalArgumentException("Email is required for resending OTP.");

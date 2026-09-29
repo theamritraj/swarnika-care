@@ -49,7 +49,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR','BILLING_STAFF') and @scopeValidator.canAccessPatient(authentication, #id))")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasAnyRole('HOSPITAL_ADMIN','RECEPTIONIST','NURSE','DOCTOR','BILLING_STAFF','PATIENT') and @scopeValidator.canAccessPatient(authentication, #id))")
     public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
         PatientResponse patient = patientService.getPatientById(id);
         return ResponseEntity.ok(createSuccessResponse("Patient retrieved successfully", patient));

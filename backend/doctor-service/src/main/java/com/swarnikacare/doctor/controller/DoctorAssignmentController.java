@@ -54,8 +54,8 @@ public class DoctorAssignmentController {
     @GetMapping("/assignments")
     @PreAuthorize("@scopeValidator.canAccessHospital(authentication, #hospitalId) and hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')")
     public ResponseEntity<Map<String, Object>> getAssignmentsByHospital(
-            @RequestParam Long hospitalId,
-            @RequestParam(required = false) Long departmentId) {
+            @RequestParam(value = "hospitalId") Long hospitalId,
+            @RequestParam(value = "departmentId", required = false) Long departmentId) {
         List<DoctorAssignmentResponse> assignments = assignmentService.getAssignmentsByHospital(hospitalId, departmentId);
         return ResponseEntity.ok(createSuccessResponse("Hospital doctor assignments retrieved successfully", assignments));
     }

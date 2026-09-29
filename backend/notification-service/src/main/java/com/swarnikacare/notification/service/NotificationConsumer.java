@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
 
@@ -23,13 +23,13 @@ public class NotificationConsumer {
     private final NotificationRepository notificationRepository;
     private final NotificationDispatcher dispatcher;
     private final ObjectMapper objectMapper;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     public NotificationConsumer(ProcessedEventRepository processedEventRepository, 
                               NotificationRepository notificationRepository,
                               NotificationDispatcher dispatcher,
                               ObjectMapper objectMapper,
-                              RedisTemplate<String, String> redisTemplate) {
+                              StringRedisTemplate redisTemplate) {
         this.processedEventRepository = processedEventRepository;
         this.notificationRepository = notificationRepository;
         this.dispatcher = dispatcher;

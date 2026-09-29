@@ -55,9 +55,9 @@ public class DoctorController {
     @GetMapping("/directory")
     @PreAuthorize("#hospitalId == null or @scopeValidator.canAccessHospital(authentication, #hospitalId)")
     public ResponseEntity<Map<String, Object>> getDoctorDirectory(
-            @RequestParam(required = false) Long hospitalId,
-            @RequestParam(required = false) Long departmentId,
-            @RequestParam(required = false) String search) {
+            @RequestParam(value = "hospitalId", required = false) Long hospitalId,
+            @RequestParam(value = "departmentId", required = false) Long departmentId,
+            @RequestParam(value = "search", required = false) String search) {
         List<DoctorDirectoryResponse> directory = doctorService.getDoctorDirectory(hospitalId, departmentId, search);
         return ResponseEntity.ok(createSuccessResponse("Doctor directory retrieved successfully", directory));
     }
@@ -105,9 +105,9 @@ public class DoctorController {
     @GetMapping("/availability")
     @PreAuthorize("#hospitalId == null or @scopeValidator.canAccessHospital(authentication, #hospitalId)")
     public ResponseEntity<Map<String, Object>> getGlobalAvailability(
-            @RequestParam(required = false) Long hospitalId,
-            @RequestParam(required = false) Long departmentId,
-            @RequestParam(required = false) Long doctorId) {
+            @RequestParam(value = "hospitalId", required = false) Long hospitalId,
+            @RequestParam(value = "departmentId", required = false) Long departmentId,
+            @RequestParam(value = "doctorId", required = false) Long doctorId) {
         List<DoctorAvailabilityResponse> availability = availabilityService.getAvailability(hospitalId, departmentId, doctorId);
         return ResponseEntity.ok(createSuccessResponse("Availability retrieved successfully", availability));
     }

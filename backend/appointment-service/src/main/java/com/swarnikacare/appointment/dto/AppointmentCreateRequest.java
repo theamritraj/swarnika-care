@@ -1,5 +1,6 @@
 package com.swarnikacare.appointment.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.swarnikacare.appointment.entity.AppointmentType;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
@@ -9,22 +10,18 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
 public class AppointmentCreateRequest {
 
-    @NotNull(message = "Patient ID is required")
     private Long patientId;
 
     @NotNull(message = "Doctor ID is required")
     private Long doctorId;
 
-    @NotNull(message = "Hospital ID is required")
     private Long hospitalId;
 
-    @NotNull(message = "Department ID is required")
     private Long departmentId;
 
     @NotNull(message = "Appointment date is required")
@@ -32,15 +29,20 @@ public class AppointmentCreateRequest {
     private LocalDate appointmentDate;
 
     @NotNull(message = "Start time is required")
+    @JsonDeserialize(using = FlexibleLocalTimeDeserializer.class)
     private LocalTime startTime;
 
-    @NotNull(message = "End time is required")
+    @JsonDeserialize(using = FlexibleLocalTimeDeserializer.class)
     private LocalTime endTime;
 
-    @NotNull(message = "Appointment type is required")
     private AppointmentType appointmentType;
 
     private String reason;
     private String notes;
+
+    // Optional fields for public booking
+    private String patientName;
+    private String patientMobile;
+    private String patientEmail;
 
 }
