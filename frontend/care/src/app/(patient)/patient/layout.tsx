@@ -28,8 +28,18 @@ export default async function PatientLayout({
       next: { revalidate: 0 },
     });
 
-    if (res.ok && res.data?.data) {
-      const p = res.data.data;
+    let p = (res.ok && res.data?.data) ? res.data.data : null;
+    if (!p) {
+      const sessionEmail = (session as any)?.email;
+      if (sessionEmail) {
+        const emailRes = await serverFetch(`/api/v1/patients/by-email?email=${encodeURIComponent(sessionEmail)}`, { next: { revalidate: 0 } });
+        if (emailRes.ok && emailRes.data?.data) {
+          p = emailRes.data.data;
+        }
+      }
+    }
+
+    if (p) {
       patientInfo = {
         name: `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Patient',
         email: p.email || session.sub || '',

@@ -8,12 +8,12 @@ import { API, type PublicDoctor, type PublicHospital, type PublicSpeciality } fr
 
 // Fallback avatars for doctors without a profile picture
 const FALLBACK_AVATARS = [
-  '/images/doctors/dr_priya_sharma.jpg',
-  '/images/doctors/dr_ananya_patel.jpg',
-  '/images/doctors/dr_uttpal_kant.jpg',
-  '/images/doctors/dr_vibha_singh.jpg',
-  '/images/doctors/dr_deepak_sharma.jpg',
-  '/images/doctors/dr_ruchi_verma.jpg',
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712521/swarnikacare/website/dr_priya_sharma.jpg",
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712518/swarnikacare/website/dr_ananya_patel.jpg",
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712524/swarnikacare/website/dr_uttpal_kant.jpg",
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712525/swarnikacare/website/dr_vibha_singh.jpg",
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712520/swarnikacare/website/dr_deepak_sharma.jpg",
+  "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712523/swarnikacare/website/dr_ruchi_verma.jpg",
 ];
 
 export default function DoctorsPage() {
@@ -165,6 +165,13 @@ export default function DoctorsPage() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!patientEmail || !emailRegex.test(patientEmail.trim())) {
+      alert('Please enter a valid email address to receive your appointment confirmation.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -201,7 +208,7 @@ export default function DoctorsPage() {
   };
 
   return (
-    <div className="w-full bg-[#f8f9fa] min-h-screen font-sans antialiased pb-24">
+    <div className="w-full bg-[#f8f9fa] min-h-screen font-sans antialiased pt-[74px] pb-24">
       {/* Top Breadcrumb Bar */}
       <div className="w-full bg-[#ca699d] text-white py-2 px-4 sm:px-8 lg:px-14">
         <div className="container mx-auto max-w-7xl flex items-center text-[13px] font-medium font-sans">
@@ -470,11 +477,12 @@ export default function DoctorsPage() {
 
                   <div>
                     <label className="block text-[12.5px] font-medium text-gray-700 mb-1">
-                      Email Address
+                      Email Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
-                      placeholder="name@example.com (optional)"
+                      required
+                      placeholder="name@example.com"
                       value={patientEmail}
                       onChange={(e) => setPatientEmail(e.target.value)}
                       className="w-full h-10 px-3 bg-white border border-gray-300 rounded text-[13px] focus:outline-none focus:border-[#622060]"

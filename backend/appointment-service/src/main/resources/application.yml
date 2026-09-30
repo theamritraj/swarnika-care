@@ -28,6 +28,17 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USER:swarnikahospitals@gmail.com}
+    password: ${EMAIL_PASS:wmdunaipbheulhds}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 logging:
   level:

@@ -87,7 +87,7 @@ public class InternalUserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) {
         return userService.findById(id)
                 .map(userService::mapToResponse)
                 .map(ResponseEntity::ok)
@@ -95,7 +95,7 @@ public class InternalUserController {
     }
 
     @GetMapping("/by-email")
-    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
+    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam("email") String email) {
         return userService.findByEmail(email)
                 .map(userService::mapToResponse)
                 .map(ResponseEntity::ok)
@@ -103,7 +103,7 @@ public class InternalUserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         // Implementation for compensating transaction (rollback IAM creation)
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();

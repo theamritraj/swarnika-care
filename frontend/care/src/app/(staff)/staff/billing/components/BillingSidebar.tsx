@@ -143,7 +143,7 @@ export function BillingSidebar({
             <div className="flex items-center justify-between w-full">
               <Link href="/staff/billing/dashboard" className="flex items-center">
                 <Image
-                  src="/logo.png"
+                  src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png"
                   alt="Swarnika Hospital"
                   width={145}
                   height={38}

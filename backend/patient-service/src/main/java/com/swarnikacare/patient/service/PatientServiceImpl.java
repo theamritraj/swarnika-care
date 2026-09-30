@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -175,6 +176,114 @@ public class PatientServiceImpl implements PatientService {
         return mapToResponse(savedBaby);
     }
     
+    @Transactional
+    @Override
+    public PatientResponse getOrCreatePatientByUserId(String userId, String email) {
+        String cacheKey = getPatientUserIdCacheKey(userId);
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                if (cached instanceof PatientResponse) return (PatientResponse) cached;
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                return mapper.convertValue(cached, PatientResponse.class);
+            }
+        } catch (Exception e) {}
+
+        // If email was not passed, resolve from IAM service
+        if ((email == null || email.isBlank()) && userId != null && userId.startsWith("usr-")) {
+            try {
+                String iamIdStr = userId.substring(4);
+                java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+                java.net.http.HttpRequest iamReq = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create("http://localhost:8081/api/v1/internal/users/" + iamIdStr))
+                        .header("X-Internal-Secret", "InternalSecret12345!")
+                        .GET()
+                        .build();
+                java.net.http.HttpResponse<String> iamResp = httpClient.send(iamReq, java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (iamResp.statusCode() == 200) {
+                    com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(iamResp.body());
+                    if (rootNode.has("email") && !rootNode.get("email").asText().isBlank()) {
+                        email = rootNode.get("email").asText();
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Could not retrieve user email from IAM for userId {}: {}", userId, ex.getMessage());
+            }
+        }
+
+        // 1. Try finding by userId
+        Optional<Patient> existingByUserId = patientRepository.findByUserId(userId);
+        if (existingByUserId.isPresent()) {
+            Patient p = existingByUserId.get();
+            if (email != null && !email.isBlank() && (p.getEmail() == null || p.getEmail().endsWith("@swarnikacare.local"))) {
+                p.setEmail(email.trim().toLowerCase());
+                p = patientRepository.save(p);
+            }
+            PatientResponse res = mapToResponse(p);
+            try {
+                redisTemplate.opsForValue().set(cacheKey, res, Duration.ofMinutes(60));
+            } catch (Exception e) {}
+            return res;
+        }
+
+        // 2. If email is provided, try finding by email and link to this userId
+        if (email != null && !email.isBlank()) {
+            Optional<Patient> existingByEmail = patientRepository.findByEmail(email.trim().toLowerCase());
+            if (existingByEmail.isPresent()) {
+                Patient p = existingByEmail.get();
+                p.setUserId(userId);
+                Patient saved = patientRepository.save(p);
+                PatientResponse res = mapToResponse(saved);
+                try {
+                    redisTemplate.opsForValue().set(cacheKey, res, Duration.ofMinutes(60));
+                } catch (Exception e) {}
+                return res;
+            }
+        }
+
+        // 3. Auto-provision profile for this authenticated patient
+        Patient newPatient = new Patient();
+        newPatient.setUserId(userId);
+        String patientEmail = (email != null && !email.isBlank()) ? email.trim().toLowerCase() : userId + "@swarnikacare.local";
+        newPatient.setEmail(patientEmail);
+        String name = "Patient";
+        if (patientEmail.contains("@")) {
+            String prefix = patientEmail.split("@")[0].replace(".", " ").replace("_", " ");
+            String[] parts = prefix.split(" ");
+            StringBuilder sb = new StringBuilder();
+            for (String part : parts) {
+                if (!part.isBlank()) {
+                    sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(" ");
+                }
+            }
+            name = sb.toString().trim();
+        }
+        newPatient.setFirstName(name);
+        newPatient.setLastName("Patient");
+        newPatient.setPhone("+91-0000000000");
+        newPatient.setMrn(generateUniqueMrn());
+        newPatient.setStatus(PatientStatus.ACTIVE);
+        Patient saved = patientRepository.save(newPatient);
+        log.info("Auto-provisioned patient profile for userId: {}, mrn: {}", userId, saved.getMrn());
+        PatientResponse res = mapToResponse(saved);
+        try {
+            redisTemplate.opsForValue().set(cacheKey, res, Duration.ofMinutes(60));
+        } catch (Exception e) {}
+        return res;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PatientResponse getPatientByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email must not be empty");
+        }
+        Patient patient = patientRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new PatientNotFoundException("Patient not found with email: " + email));
+        return mapToResponse(patient);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public PatientResponse getPatientByUserId(String userId) {

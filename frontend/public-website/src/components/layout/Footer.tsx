@@ -55,7 +55,7 @@ export function Footer() {
       id="site-footer"
       className="w-full relative overflow-hidden bg-[#470a45] bg-no-repeat bg-right-bottom [background-size:contain] lg:[background-size:auto_100%]"
       style={{
-        backgroundImage: "url('/images/footerbg.png')",
+        backgroundImage: 'url("https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712527/swarnikacare/website/footerbg.png")',
       }}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-14 pb-20 md:pt-16 md:pb-24">

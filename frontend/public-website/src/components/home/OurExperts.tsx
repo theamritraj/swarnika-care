@@ -98,7 +98,7 @@ export function OurExperts({ city, hospitalId }: OurExpertsProps = {}) {
             </h2>
             <div className="flex justify-center items-center mt-2 max-w-[340px] sm:max-w-md mx-auto">
               <Image
-                src="/images/hedimgicon.png"
+                src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712528/swarnikacare/website/hedimgicon.png"
                 alt="Our Experts Divider"
                 width={130}
                 height={42}
@@ -163,7 +163,7 @@ export function OurExperts({ city, hospitalId }: OurExpertsProps = {}) {
           </h2>
           <div className="flex justify-center items-center mt-2 relative max-w-[340px] sm:max-w-md mx-auto">
             <Image
-              src="/images/hedimgicon.png"
+              src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712528/swarnikacare/website/hedimgicon.png"
               alt="Our Experts Divider"
               width={130}
               height={42}

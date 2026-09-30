@@ -12,6 +12,8 @@ public interface PatientService {
     PatientResponse registerNewborn(com.swarnikacare.patient.dto.RegisterNewbornRequest request);
     PatientResponse getPatientById(Long id);
     PatientResponse getPatientByUserId(String userId);
+    PatientResponse getOrCreatePatientByUserId(String userId, String email);
+    PatientResponse getPatientByEmail(String email);
     List<PatientResponse> getAllPatients();
     PatientResponse updatePatient(Long id, PatientUpdateRequest request);
     PatientResponse updateMyProfile(String userId, PatientSelfUpdateRequest request);

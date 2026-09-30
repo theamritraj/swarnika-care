@@ -4,8 +4,14 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         
-        if (!body.email) {
+        const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!body.email || typeof body.email !== 'string') {
             return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
+        }
+
+        const trimmedEmail = body.email.trim().toLowerCase();
+        if (!EMAIL_REGEX.test(trimmedEmail)) {
+            return NextResponse.json({ success: false, message: 'Please provide a valid email address' }, { status: 400 });
         }
 
         const gatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:8080';

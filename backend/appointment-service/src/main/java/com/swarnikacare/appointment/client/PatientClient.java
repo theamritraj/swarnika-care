@@ -11,4 +11,7 @@ public interface PatientClient {
     
     @GetMapping("/{id}")
     Map<String, Object> getPatientById(@PathVariable("id") Long id);
+
+    @GetMapping("/by-email")
+    Map<String, Object> getPatientByEmail(@org.springframework.web.bind.annotation.RequestParam("email") String email);
 }

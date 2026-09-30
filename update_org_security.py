@@ -70,22 +70,22 @@ def update_hospital_scope_controller(content):
 update_file("controller/HospitalScopeController.java", update_hospital_scope_controller)
 
 def update_employee_controller(content):
-    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\\nimport org.springframework.security.access.prepost.PreAuthorize;")
-    content = content.replace("@PostMapping", "@PreAuthorize(\\"@scopeValidator.canAccessHospital(authentication, #request.hospitalId) and hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'OPERATIONS_MANAGER')\\")\\n    @PostMapping")
-    content = content.replace("@GetMapping\\n    public ResponseEntity", "@PreAuthorize(\\"hasRole('SUPER_ADMIN')\\")\\n    @GetMapping\\n    public ResponseEntity")
+    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\nimport org.springframework.security.access.prepost.PreAuthorize;")
+    content = content.replace("@PostMapping", '@PreAuthorize("@scopeValidator.canAccessHospital(authentication, #request.hospitalId) and hasAnyRole(\'SUPER_ADMIN\', \'HOSPITAL_ADMIN\', \'OPERATIONS_MANAGER\')")\n    @PostMapping')
+    content = content.replace("@GetMapping\n    public ResponseEntity", '@PreAuthorize("hasRole(\'SUPER_ADMIN\')")\n    @GetMapping\n    public ResponseEntity')
     return content
 update_file("controller/EmployeeController.java", update_employee_controller)
 
 def update_position_controller(content):
-    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\\nimport org.springframework.security.access.prepost.PreAuthorize;")
-    content = content.replace("@PostMapping", "@PreAuthorize(\\"@scopeValidator.canAccessHospital(authentication, #request.hospitalId) and hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'OPERATIONS_MANAGER')\\")\\n    @PostMapping")
-    content = content.replace("@GetMapping\\n    public ResponseEntity", "@PreAuthorize(\\"hasRole('SUPER_ADMIN')\\")\\n    @GetMapping\\n    public ResponseEntity")
+    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\nimport org.springframework.security.access.prepost.PreAuthorize;")
+    content = content.replace("@PostMapping", '@PreAuthorize("@scopeValidator.canAccessHospital(authentication, #request.hospitalId) and hasAnyRole(\'SUPER_ADMIN\', \'HOSPITAL_ADMIN\', \'OPERATIONS_MANAGER\')")\n    @PostMapping')
+    content = content.replace("@GetMapping\n    public ResponseEntity", '@PreAuthorize("hasRole(\'SUPER_ADMIN\')")\n    @GetMapping\n    public ResponseEntity')
     return content
 update_file("controller/PositionController.java", update_position_controller)
 
 def update_designation_controller(content):
-    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\\nimport org.springframework.security.access.prepost.PreAuthorize;")
-    content = content.replace("@PostMapping", "@PreAuthorize(\\"hasAnyRole('SUPER_ADMIN', 'HOSPITAL_ADMIN')\\")\\n    @PostMapping")
+    content = content.replace("package com.swarnikacare.organization.controller;", "package com.swarnikacare.organization.controller;\nimport org.springframework.security.access.prepost.PreAuthorize;")
+    content = content.replace("@PostMapping", '@PreAuthorize("hasAnyRole(\'SUPER_ADMIN\', \'HOSPITAL_ADMIN\')")\n    @PostMapping')
     return content
 update_file("controller/DesignationController.java", update_designation_controller)
 

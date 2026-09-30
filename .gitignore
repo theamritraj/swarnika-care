@@ -28,3 +28,5 @@ out/
 # Misc
 *.tmp
 *.temp
+__pycache__/
+*.pyc

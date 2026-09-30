@@ -49,10 +49,22 @@ export default async function PatientDashboard() {
   }
 
   // Fetch patient profile
+  let patient: any = null;
   const profileRes = await serverFetch('/api/v1/patients/me', { next: { revalidate: 0 } });
-  const patient = profileRes.ok ? profileRes.data?.data : null;
+  if (profileRes.ok && profileRes.data?.data) {
+    patient = profileRes.data.data;
+  } else {
+    const sessionEmail = (session as any)?.email;
+    if (sessionEmail) {
+      const emailRes = await serverFetch(`/api/v1/patients/by-email?email=${encodeURIComponent(sessionEmail)}`, { next: { revalidate: 0 } });
+      if (emailRes.ok && emailRes.data?.data) {
+        patient = emailRes.data.data;
+      }
+    }
+  }
 
   // Fetch appointments if we have a patient ID
+  let totalUpcomingCount = 0;
   let upcomingAppointments: any[] = [];
   let recentAppointments: any[] = [];
   if (patient?.id) {
@@ -62,13 +74,15 @@ export default async function PatientDashboard() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      upcomingAppointments = all
+      const allUpcoming = all
         .filter((a: any) => {
           const apptDate = new Date(a.appointmentDate);
           return apptDate >= today && !['CANCELLED', 'COMPLETED', 'NO_SHOW'].includes(a.status);
         })
-        .sort((a: any, b: any) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
-        .slice(0, 3);
+        .sort((a: any, b: any) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+
+      totalUpcomingCount = allUpcoming.length;
+      upcomingAppointments = allUpcoming.slice(0, 3);
 
       recentAppointments = all
         .filter((a: any) => ['COMPLETED', 'CANCELLED'].includes(a.status))
@@ -97,7 +111,7 @@ export default async function PatientDashboard() {
   const stats = [
     {
       label: 'Upcoming Appointments',
-      value: upcomingAppointments.length,
+      value: totalUpcomingCount,
       icon: Calendar,
       color: 'text-blue-600 dark:text-blue-400',
       bg: 'bg-blue-50 dark:bg-blue-950/30',

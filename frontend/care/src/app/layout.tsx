@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: "Swarnika Hospital provides world-class medical services, top-tier doctors, and emergency care in Sasaram, Rohtas. Book your appointment online today.",
   keywords: ["Hospital in Sasaram", "Best Doctors in Rohtas", "Swarnika Care", "Medical Services", "Emergency Hospital", "Orthopaedics Sasaram"],
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png",
+    apple: "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png",
   },
   openGraph: {
     title: "Swarnika Hospital - Quality Healthcare in Sasaram",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "Swarnika Hospital",
     images: [
       {
-        url: "/logo.png",
+        url: "https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png",
         width: 800,
         height: 600,
         alt: "Swarnika Hospital Logo",
@@ -50,7 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground flex flex-col`}>
+      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground flex flex-col`}>
         <Providers>
           
           <Navbar />

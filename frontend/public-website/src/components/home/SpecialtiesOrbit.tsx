@@ -94,7 +94,7 @@ export function SpecialtiesOrbit() {
       id="why-us"
       className="relative w-full overflow-hidden py-12 md:py-16"
       style={{
-        backgroundImage: "url('/images/bg-servicesection-01.jpg')",
+        backgroundImage: 'url("https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712517/swarnikacare/website/bg-servicesection-01.jpg")',
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
@@ -114,7 +114,7 @@ export function SpecialtiesOrbit() {
           </h2>
           <div className="flex justify-center mt-2">
             <Image
-              src="/images/hedimgiconwhite.png"
+              src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712529/swarnikacare/website/hedimgiconwhite.png"
               alt="Our Specialties"
               width={130}
               height={42}

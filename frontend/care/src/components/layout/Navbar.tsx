@@ -22,7 +22,7 @@ export function Navbar() {
 
   // Guard AFTER all hooks — React Rules of Hooks requires hooks to always
   // be called in the same order; no early returns before hook calls.
-  if (pathname.startsWith('/admin') || pathname.startsWith('/doctor') || pathname.startsWith('/staff')) return null;
+  if (pathname.startsWith('/admin') || pathname.startsWith('/doctor') || pathname.startsWith('/staff') || pathname.startsWith('/patient')) return null;
 
   return (
     <header 
@@ -35,7 +35,7 @@ export function Navbar() {
         {/* Left Logo */}
         <Link href="/" className="flex items-center gap-4">
           <Image 
-            src="/logo.png" 
+            src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png" 
             alt="Swarnika Hospital" 
             width={180} 
             height={55} 
@@ -55,23 +55,9 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-8">
-          <button className="flex items-center gap-3 text-card-foreground/80 hover:text-[#007b92] transition-colors cursor-pointer group">
-            <HeadphonesIcon className="w-6 h-6 text-muted-foreground group-hover:text-[#007b92]" />
-            <div className="hidden sm:flex flex-col items-start">
-              <span className="text-[14px] font-bold leading-tight">Support</span>
-              <span className="text-[11px] text-muted-foreground font-medium leading-tight group-hover:text-[#007b92]">Need Help?</span>
-            </div>
-          </button>
-          
-          <div className="h-8 w-[1px] bg-accent/50"></div>
 
-          <button className="flex items-center gap-1.5 text-card-foreground/80 hover:text-[#007b92] transition-colors cursor-pointer font-bold text-[14px]">
-            <Globe className="w-5 h-5 text-muted-foreground" />
-            <span>EN</span>
-            <ChevronDown className="w-4 h-4 text-muted-foreground/70" />
-          </button>
-          
-          <div className="h-8 w-[1px] bg-accent/50"></div>
+
+
           <ThemeToggle />
 
           {!isLoginPage && (

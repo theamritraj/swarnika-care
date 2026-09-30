@@ -6,14 +6,34 @@ import { Mail, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [otp, setOtp] = useState('');
     const [step, setStep] = useState<1 | 2>(1);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    const validateEmail = (val: string) => {
+        const trimmed = val.trim();
+        if (!trimmed) {
+            return 'Email address is required';
+        }
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(trimmed)) {
+            return 'Please enter a valid email address (e.g. name@swarnikahospitals.com)';
+        }
+        return '';
+    };
+
     const handleRequestOtp = async (e: React.FormEvent) => {
         e.preventDefault();
+        const err = validateEmail(email);
+        if (err) {
+            setEmailError(err);
+            return;
+        }
+
+        setEmailError('');
         setLoading(true);
         setError('');
 
@@ -21,7 +41,7 @@ export default function LoginPage() {
             const res = await fetch('/api/auth/request-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: email.trim().toLowerCase() })
             });
             const data = await res.json();
             
@@ -46,7 +66,7 @@ export default function LoginPage() {
             const res = await fetch('/api/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp })
+                body: JSON.stringify({ email: email.trim().toLowerCase(), otp })
             });
             const data = await res.json();
             
@@ -94,26 +114,44 @@ export default function LoginPage() {
                 )}
 
                 {step === 1 ? (
-                    <form onSubmit={handleRequestOtp} className="space-y-6">
+                    <form onSubmit={handleRequestOtp} className="space-y-6" noValidate>
                         <div>
                             <label className="mb-2 block text-[13px] font-bold text-foreground">Email Address</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-muted-foreground/70" />
+                                    <Mail className={`h-5 w-5 transition-colors ${emailError ? 'text-red-500' : 'text-muted-foreground/70'}`} />
                                 </div>
                                 <input 
                                     type="email" 
                                     required
                                     placeholder="name@swarnikahospitals.com"
-                                    className="w-full rounded-[8px] border border-border bg-background py-3.5 pl-12 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-[#007b92] focus:ring-1 focus:ring-[#007b92] transition-all"
+                                    className={`w-full rounded-[8px] border bg-background py-3.5 pl-12 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none transition-all ${
+                                        emailError 
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' 
+                                            : 'border-border focus:border-[#007b92] focus:ring-1 focus:ring-[#007b92]'
+                                    }`}
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (emailError) setEmailError('');
+                                        if (error) setError('');
+                                    }}
+                                    onBlur={() => {
+                                        if (email.trim()) {
+                                            setEmailError(validateEmail(email));
+                                        }
+                                    }}
                                 />
                             </div>
+                            {emailError && (
+                                <p className="mt-2 text-xs text-red-500 font-medium">
+                                    {emailError}
+                                </p>
+                            )}
                         </div>
                         <button 
                             type="submit" 
-                            disabled={loading || !email}
+                            disabled={loading || !email.trim()}
                             className="w-full rounded-[8px] bg-[#007b92] py-4 text-white text-[15px] font-semibold hover:bg-[#006274] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#007b92]/20"
                         >
                             {loading ? 'Sending...' : 'Send OTP'}

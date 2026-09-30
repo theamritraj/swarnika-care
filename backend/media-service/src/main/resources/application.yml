@@ -1,0 +1,28 @@
+server:
+  port: 8094
+
+spring:
+  application:
+    name: media-service
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    preferIpAddress: true
+
+cloudinary:
+  cloud-name: eb6pvtx2
+  api-key: "526279599924919"
+  api-secret: Q3hoRxcN8nUtOeZWgQuHMoT_HfQ
+
+app:
+  security:
+    enabled: true
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970

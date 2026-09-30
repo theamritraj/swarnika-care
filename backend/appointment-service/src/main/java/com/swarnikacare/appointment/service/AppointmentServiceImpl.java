@@ -25,6 +25,7 @@ import com.swarnikacare.appointment.security.CustomAuthenticationDetails;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -61,6 +62,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired(required = false)
+    private AppointmentEmailService appointmentEmailService;
 
     @Value("${kafka.topic.appointment.booked:appointment.booked}")
     private String appointmentBookedTopic;
@@ -117,7 +121,19 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
         boolean isPublicGuest = (request.getPatientName() != null && !request.getPatientName().isBlank());
         if (request.getPatientId() == null) {
-            request.setPatientId(1L);
+            Long resolvedPatientId = null;
+            if (request.getPatientEmail() != null && !request.getPatientEmail().isBlank()) {
+                try {
+                    Map<String, Object> pResp = patientClient.getPatientByEmail(request.getPatientEmail().trim().toLowerCase());
+                    if (pResp != null && pResp.get("data") instanceof Map<?, ?> pData) {
+                        Object idObj = pData.get("id");
+                        if (idObj instanceof Number) {
+                            resolvedPatientId = ((Number) idObj).longValue();
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+            request.setPatientId(resolvedPatientId != null ? resolvedPatientId : 1L);
         }
 
         authorizeHospitalAction(request.getHospitalId());
@@ -182,6 +198,51 @@ public class AppointmentServiceImpl implements AppointmentService {
             Appointment saved = appointmentRepository.save(appointment);
             publishAppointmentEvent(saved, patientData, doctorData, hospitalData, appointmentBookedTopic, "AppointmentBookedEvent");
 
+            // Send confirmation email asynchronously to user's email address
+            if (appointmentEmailService != null) {
+                String recipientEmail = null;
+                if (patientData != null && patientData.get("email") != null && !String.valueOf(patientData.get("email")).isBlank()) {
+                    recipientEmail = String.valueOf(patientData.get("email"));
+                } else if (request.getPatientEmail() != null && !request.getPatientEmail().isBlank()) {
+                    recipientEmail = request.getPatientEmail();
+                }
+
+                String patientFullName = "";
+                if (patientData != null) {
+                    String fn = patientData.get("firstName") != null ? String.valueOf(patientData.get("firstName")) : "";
+                    String ln = patientData.get("lastName") != null ? String.valueOf(patientData.get("lastName")) : "";
+                    patientFullName = (fn + " " + ln).trim();
+                }
+                if (patientFullName.isBlank() && request.getPatientName() != null) {
+                    patientFullName = request.getPatientName().trim();
+                }
+
+                String doctorFullName = "";
+                if (doctorData != null) {
+                    String fn = doctorData.get("firstName") != null ? String.valueOf(doctorData.get("firstName")) : "";
+                    String ln = doctorData.get("lastName") != null ? String.valueOf(doctorData.get("lastName")) : "";
+                    doctorFullName = ("Dr. " + fn + " " + ln).trim();
+                } else {
+                    doctorFullName = resolveDoctorNameFallback(saved.getDoctorId());
+                }
+
+                String hospitalName = (hospitalData != null && hospitalData.get("name") != null) 
+                        ? String.valueOf(hospitalData.get("name")) : "Swarnika Hospitals Main Branch";
+                String hospitalAddress = (hospitalData != null && hospitalData.get("address") != null) 
+                        ? String.valueOf(hospitalData.get("address")) : "Healthcare City, Sasaram, Bihar";
+
+                if (recipientEmail != null && !recipientEmail.isBlank()) {
+                    appointmentEmailService.sendBookingConfirmationEmail(
+                            saved,
+                            recipientEmail,
+                            patientFullName,
+                            doctorFullName,
+                            hospitalName,
+                            hospitalAddress
+                    );
+                }
+            }
+
             return mapToResponse(saved, patientData, doctorData, hospitalData);
         } finally {
             releaseSlotLock(request.getHospitalId(), request.getDoctorId(), request.getAppointmentDate(), request.getStartTime(), lockToken);
@@ -197,10 +258,24 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AppointmentResponse> getAppointmentsByPatient(Long patientId) {
         Map<String, Object> patientData = validatePatientExists(patientId);
         authorizePatientAction(patientData);
+
+        // Check if there are unlinked guest appointments booked with this patient's email
+        String email = (String) patientData.get("email");
+        if (email != null && !email.isBlank()) {
+            String cleanEmail = email.trim();
+            List<Appointment> guestAppts = appointmentRepository.findByNotesContaining(cleanEmail);
+            for (Appointment ga : guestAppts) {
+                if (ga.getPatientId() == null || ga.getPatientId().equals(1L)) {
+                    ga.setPatientId(patientId);
+                    appointmentRepository.save(ga);
+                }
+            }
+        }
+
         return appointmentRepository.findByPatientId(patientId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

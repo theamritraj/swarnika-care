@@ -83,6 +83,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     details.put("hospitalId", hospitalIdClaim);
                 }
                 details.put("userId", username);
+                Object emailClaim = claims.get("email");
+                if (emailClaim != null) {
+                    details.put("email", emailClaim.toString());
+                }
                 authToken.setDetails(details);
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

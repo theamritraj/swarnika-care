@@ -64,7 +64,7 @@ export function Navbar() {
         <div className="shrink-0 flex items-center gap-2 sm:gap-3.5">
           <Link href="/" className="flex items-center gap-2">
             <Image 
-              src="/logo.png" 
+              src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png" 
               alt="Swarnika Hospitals" 
               width={140} 
               height={44} 

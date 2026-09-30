@@ -11,6 +11,16 @@ export async function serverFetch(endpoint: string, options: RequestInit = {}) {
 
     if (token) {
         headers.set('Authorization', `Bearer ${token}`);
+        try {
+            const payloadBase64 = token.split('.')[1];
+            if (payloadBase64) {
+                const decodedPayload = Buffer.from(payloadBase64, 'base64').toString('utf-8');
+                const sessionData = JSON.parse(decodedPayload);
+                if (sessionData.email) {
+                    headers.set('X-User-Email', sessionData.email);
+                }
+            }
+        } catch (e) {}
     }
 
     try {

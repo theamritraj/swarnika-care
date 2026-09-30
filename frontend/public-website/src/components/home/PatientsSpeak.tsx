@@ -84,7 +84,7 @@ export function PatientsSpeak() {
           </h2>
           <div className="flex justify-center mt-2.5">
             <Image
-              src="/images/hedimgicon.png"
+              src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712528/swarnikacare/website/hedimgicon.png"
               alt="Happy Mom's Speaks Divider"
               width={130}
               height={42}
@@ -100,7 +100,7 @@ export function PatientsSpeak() {
             className="w-full h-full min-h-[380px] md:min-h-[410px] bg-white rounded-[24px] shadow-[0_12px_40px_rgba(215,228,249,0.55)] border border-slate-100 p-7 md:p-8 flex flex-col justify-between relative overflow-hidden transition-all duration-300"
             style={{
               backgroundImage:
-                "url('/images/quote1.png'), url('/images/quote.png')",
+                'url("https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712536/swarnikacare/website/quote1.png"), url("https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712535/swarnikacare/website/quote.png")',
               backgroundPosition: 'top 16px left 16px, bottom 20px right 16px',
               backgroundSize: '110px auto, 110px auto',
               backgroundRepeat: 'no-repeat, no-repeat',
@@ -112,7 +112,7 @@ export function PatientsSpeak() {
             <div className="flex flex-col items-center">
               <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-sm border-2 border-white mb-2">
                 <Image
-                  src="/images/testimonial-icon.png"
+                  src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712538/swarnikacare/website/testimonial-icon.png"
                   alt="Mother & Baby"
                   fill
                   className="object-cover"
@@ -201,7 +201,7 @@ export function PatientsSpeak() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1.5 shadow-md">
                   <Image
-                    src="/logo.png"
+                    src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png"
                     alt="Swarnika Hospitals"
                     width={28}
                     height={28}
@@ -262,7 +262,7 @@ export function PatientsSpeak() {
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center p-1.5 shadow">
                   <Image
-                    src="/logo.png"
+                    src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png"
                     alt="Swarnika Hospitals"
                     width={26}
                     height={26}

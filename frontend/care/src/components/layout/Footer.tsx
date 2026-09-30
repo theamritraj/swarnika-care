@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith('/admin') || pathname.startsWith('/doctor') || pathname.startsWith('/staff')) return null;
+  if (pathname.startsWith('/admin') || pathname.startsWith('/doctor') || pathname.startsWith('/staff') || pathname.startsWith('/patient')) return null;
 
   return (
     <footer className="bg-background border-t border-border mt-auto flex flex-col">

@@ -10,7 +10,6 @@ export function PregnancyCalculatorSideTab() {
   const [cycleLength, setCycleLength] = useState('');
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
-  const [email, setEmail] = useState('');
 
   const [estimatedDueDate, setEstimatedDueDate] = useState('');
   const [estimatedFetalAge, setEstimatedFetalAge] = useState('');
@@ -32,7 +31,9 @@ export function PregnancyCalculatorSideTab() {
     };
   }, [isOpen]);
 
-  const calculatePregnancy = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const calculatePregnancy = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lmpDate) return;
 
@@ -67,6 +68,30 @@ export function PregnancyCalculatorSideTab() {
       const weeks = Math.floor(diffDays / 7);
       const days = diffDays % 7;
       setEstimatedFetalAge(`${weeks} Weeks, ${days} Days`);
+    }
+
+    // Submit lead to backend
+    if (name && mobile) {
+      setIsSubmitting(true);
+      try {
+        await fetch('http://localhost:8080/api/v1/leads/pregnancy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            mobile,
+            lmpDate: lmpDate,
+            cycleLength: cycleDays,
+            estimatedDueDate: edd.toISOString().split('T')[0],
+            estimatedFetalAgeWeeks: Math.floor(diffDays / 7),
+            estimatedFetalAgeDays: diffDays % 7,
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to submit pregnancy lead:', err);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -170,25 +195,13 @@ export function PregnancyCalculatorSideTab() {
                 />
               </div>
 
-              <div>
-                <label className="block text-[13px] font-medium text-[#333333] mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full h-10 px-3 bg-white rounded border border-[#d2d2d2] text-[13px] text-[#333333] placeholder:text-gray-400 focus:outline-none focus:border-[#622060]"
-                />
-              </div>
-
               <div className="pt-1">
                 <button
                   type="submit"
-                  className="w-full h-10 bg-[#4a0448] hover:bg-[#60095d] text-white font-bold rounded-[8px] text-[14px] transition-colors duration-200 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full h-10 bg-[#4a0448] hover:bg-[#60095d] disabled:opacity-70 text-white font-bold rounded-[8px] text-[14px] transition-colors duration-200 cursor-pointer flex items-center justify-center"
                 >
-                  Calculate
+                  {isSubmitting ? 'Calculating...' : 'Calculate'}
                 </button>
               </div>
             </form>

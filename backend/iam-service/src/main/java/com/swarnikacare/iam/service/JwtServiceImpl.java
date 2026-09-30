@@ -45,6 +45,7 @@ public class JwtServiceImpl implements JwtService {
                 .map(Enum::name)
                 .toList();
         extraClaims.put("permissions", permissions);
+        extraClaims.put("email", user.getEmail());
         
         extraClaims.put("iss", "swarnika-iam");
         extraClaims.put("aud", "swarnika-care");

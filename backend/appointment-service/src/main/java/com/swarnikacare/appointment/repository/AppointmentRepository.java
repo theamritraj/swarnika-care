@@ -17,6 +17,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     
     List<Appointment> findByDoctorId(Long doctorId);
 
+    List<Appointment> findByNotesContaining(String keyword);
+
     @Query("SELECT a FROM Appointment a WHERE a.doctorId = :doctorId AND a.appointmentDate = :appointmentDate " +
            "AND a.status IN ('SCHEDULED', 'CONFIRMED') " +
            "AND (a.startTime < :endTime AND a.endTime > :startTime)")

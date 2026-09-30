@@ -83,10 +83,25 @@ public class PatientController {
      */
     @GetMapping("/me")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<Map<String, Object>> getMyProfile(Authentication authentication) {
+    public ResponseEntity<Map<String, Object>> getMyProfile(
+            Authentication authentication,
+            @RequestHeader(value = "X-User-Email", required = false) String emailHeader) {
         String userId = authentication.getName();
-        PatientResponse patient = patientService.getPatientByUserId(userId);
+        String email = emailHeader;
+        if ((email == null || email.isBlank()) && authentication.getDetails() instanceof Map<?, ?> details) {
+            Object emailObj = details.get("email");
+            if (emailObj != null) {
+                email = emailObj.toString();
+            }
+        }
+        PatientResponse patient = patientService.getOrCreatePatientByUserId(userId, email);
         return ResponseEntity.ok(createSuccessResponse("Profile retrieved successfully", patient));
+    }
+
+    @GetMapping("/by-email")
+    public ResponseEntity<Map<String, Object>> getPatientByEmail(@RequestParam("email") String email) {
+        PatientResponse patient = patientService.getPatientByEmail(email);
+        return ResponseEntity.ok(createSuccessResponse("Patient retrieved successfully", patient));
     }
 
     /**

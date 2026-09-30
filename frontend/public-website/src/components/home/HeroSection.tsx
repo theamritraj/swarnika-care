@@ -9,7 +9,7 @@ export function HeroSection() {
       <div className="relative w-full aspect-[1402/514] max-h-[580px]">
         <Link href="/book" className="block w-full h-full relative cursor-pointer" aria-label="First Free Consultation">
           <Image
-            src="/images/hero_banner.jpg"
+            src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712530/swarnikacare/website/hero_banner.jpg"
             alt="First Free Consultation - Consult our expert doctors in a safe environment"
             fill
             priority

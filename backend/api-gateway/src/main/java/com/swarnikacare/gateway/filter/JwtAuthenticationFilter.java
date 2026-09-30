@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/verify-otp",
             "/api/v1/auth/register/patient",
             "/api/v1/public/",
+            "/api/v1/leads/",
             "/swagger-ui",
             "/v3/api-docs",
             "/webjars",
@@ -96,10 +97,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     hospitalClaim = claims.get("hospital_id");
                 }
 
+                Object emailClaim = claims.get("email");
+
                 requestBuilder
                         .header("X-User-Id", userId)
                         .header("X-Role", roles != null ? String.join(",", roles) : "")
                         .header("X-Permissions", permissions != null ? String.join(",", permissions) : "");
+
+                if (emailClaim != null) {
+                    requestBuilder.header("X-User-Email", emailClaim.toString());
+                }
 
                 if (hospitalClaim != null) {
                     // JWT-embedded hospitalId takes precedence (single-hospital staff / patients)
@@ -126,11 +133,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                         List<String> roles = claims.get("roles", List.class);
                         List<String> permissions = claims.get("permissions", List.class);
                         Object hospitalClaim = claims.get("hospitalId") != null ? claims.get("hospitalId") : claims.get("hospital_id");
+                        Object emailClaim = claims.get("email");
 
                         requestBuilder
                                 .header("X-User-Id", userId)
                                 .header("X-Role", roles != null ? String.join(",", roles) : "")
                                 .header("X-Permissions", permissions != null ? String.join(",", permissions) : "");
+
+                        if (emailClaim != null) {
+                            requestBuilder.header("X-User-Email", emailClaim.toString());
+                        }
 
                         if (hospitalClaim != null) {
                             requestBuilder.header("X-Hospital-Id", hospitalClaim.toString());

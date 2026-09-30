@@ -15,7 +15,7 @@ export default function NotFound() {
               In production, you can replace this with a transparent PNG of your doctors.
             */}
             <img 
-              src="/images/doctors-team.jpg" 
+              src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712526/swarnikacare/website/doctors-team.jpg" 
               alt="Our Doctors" 
               className="w-full h-full object-cover object-center" 
             />

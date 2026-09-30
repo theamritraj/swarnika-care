@@ -132,7 +132,7 @@ export function DoctorSidebar({
             <div>
               <Link href="/doctor/dashboard" className="flex items-center">
                 <Image
-                  src="/logo.png"
+                  src="https://res.cloudinary.com/eb6pvtx2/image/upload/v1790712540/swarnikacare/website/logo.png"
                   alt="Swarnika Hospital"
                   width={155}
                   height={42}

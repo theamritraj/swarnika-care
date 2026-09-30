@@ -35,8 +35,19 @@ export default async function AppointmentsPage() {
     redirect('/login');
   }
 
+  let patient: any = null;
   const profileRes = await serverFetch('/api/v1/patients/me', { next: { revalidate: 0 } });
-  const patient = profileRes.ok ? profileRes.data?.data : null;
+  if (profileRes.ok && profileRes.data?.data) {
+    patient = profileRes.data.data;
+  } else {
+    const sessionEmail = (session as any)?.email;
+    if (sessionEmail) {
+      const emailRes = await serverFetch(`/api/v1/patients/by-email?email=${encodeURIComponent(sessionEmail)}`, { next: { revalidate: 0 } });
+      if (emailRes.ok && emailRes.data?.data) {
+        patient = emailRes.data.data;
+      }
+    }
+  }
 
   let appointments: any[] = [];
   if (patient?.id) {
